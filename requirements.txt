@@ -1,0 +1,9 @@
+# Tested with Python 3.11 on November 11, 2026. google-genai 3.1.0 requires Python 3.11 or newer.
+google-genai==3.1.0
+numpy==2.4.6
+pandas==3.1.1
+scikit-learn==1.9.1
+pydantic==2.14.3
+python-dotenv==1.2.4
+streamlit==1.67.0
+altair==6.3.0
