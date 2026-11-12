@@ -33,7 +33,36 @@ streamlit run app_streamlit.py
 ```
 
 `agent.py` writes each experiment to `runs/`. In the app, "Show the latest recorded run" reads the newest
-file there and makes no API call.
+file there and makes no API call. Until you save a run of your own, it shows the tutorial's first attempt
+from `recorded_runs/`.
+
+## Recorded results
+
+`recorded_runs/` holds the six attempts from the tutorial, run on November 11, 2026 with
+`google-genai` 3.1.0: every tool call and result, token usage per turn, the frozen report, the evaluator's
+score, and the holdout result for the first `medium` attempt. No API key is stored. To see the
+medium-versus-high summary without an API call:
+
+```bash
+python compare_levels.py
+```
+
+## Reproducing the six-attempt comparison
+
+Each command below starts from a clean state, so no attempt sees another one's history. Together they
+make three attempts per thinking level (billed, about $2 at the introductory rate):
+
+```bash
+python agent.py                                 # medium attempt 1, evaluator, holdout, high attempt 1
+python agent.py --level medium --attempt-only   # medium attempt 2
+python agent.py --level medium --attempt-only   # medium attempt 3
+python agent.py --level high --attempt-only     # high attempt 2
+python agent.py --level high --attempt-only     # high attempt 3
+python compare_levels.py --folder runs          # summary of your own attempts
+```
+
+Model output varies from run to run, so expect your tool calls, tokens, and costs to differ from the
+recorded ones. The data, tools, limits, and evaluator stay the same.
 
 ## Files
 
@@ -44,3 +73,5 @@ file there and makes no API call.
 - `evaluator.py`: the independent check, outside the agent's tool list
 - `holdout_check.py`: applies a frozen recommendation to the holdout, once
 - `app_streamlit.py`: the experiment UI
+- `compare_levels.py`: summarizes saved attempts by thinking level
+- `recorded_runs/`: the six attempts from the tutorial

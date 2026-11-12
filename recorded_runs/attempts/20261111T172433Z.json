@@ -1,0 +1,3719 @@
+{
+  "thinking_level": "high",
+  "model": "gemini-4-carbon",
+  "started_utc": "2026-11-11T17:17:53.915478+00:00",
+  "rates": {
+    "input": 2.0,
+    "cached": 0.1,
+    "output": 10.0
+  },
+  "rate_period": "introductory",
+  "limits": {
+    "turns": 25,
+    "tool_calls": 60,
+    "seconds": 1800,
+    "spend_usd": 3.0
+  },
+  "stop_reason": "agent finished",
+  "tool_calls": [
+    {
+      "n": 1,
+      "turn": 1,
+      "name": "get_audit_context",
+      "arguments": {},
+      "is_error": false,
+      "result": {
+        "classifier": {
+          "classifier": "scikit-learn HistGradientBoostingClassifier (max_iter=200, learning_rate=0.05)",
+          "features": [
+            "log_amount",
+            "is_mobile",
+            "night",
+            "log_account_age",
+            "tx_last_24h",
+            "ip_country_mismatch",
+            "new_device"
+          ],
+          "training_window": "2026-06-01 to 2026-08-02",
+          "training_rows": 298784,
+          "training_fraud_rate": 0.0209,
+          "train_average_precision": 0.764
+        },
+        "validation_window": {
+          "dates": "2026-08-03 to 2026-08-30 (UTC calendar days)",
+          "days": 28,
+          "transactions": 133285,
+          "transactions_per_day": {
+            "min": 3863,
+            "mean": 4760.2,
+            "max": 6265
+          },
+          "by_channel": {
+            "Website": {
+              "transactions": 95735,
+              "labeled_fraud": 1726,
+              "labeled_fraud_value_usd": 282823.53
+            },
+            "Mobile App": {
+              "transactions": 37550,
+              "labeled_fraud": 1132,
+              "labeled_fraud_value_usd": 175404.53
+            }
+          },
+          "average_precision": 0.741
+        },
+        "risk_score": "Rounded to 0.001. A threshold between grid points flags the same rows as the next grid point up.",
+        "current_configuration": {
+          "threshold": 0.5,
+          "rule": "flag when risk_score >= threshold",
+          "daily_review_capacity": 200
+        },
+        "policy": "PayGuard deployment policy (fixed; the audit may not change it)\n- One global decision threshold applies to both channels. A transaction is flagged\n  for manual review when risk_score >= threshold.\n- R1: Flagged transactions must cover at least 85% of the\n  labeled fraud value across all channels.\n- R2: Flagged transactions must cover at least 70% of the\n  labeled fraud value within each channel (Website and Mobile App separately).\n- R3: No more than 200 transactions may be flagged on any single UTC\n  calendar day. This is a maximum per day, not an average.\n- Fraud-value recall = value of labeled fraud that is flagged / total value of labeled fraud.\n  Flagging a transaction does not mean the fraud was stopped or the money recovered.\n- Precision, transaction-level recall, false positives, and average precision are\n  diagnostics only. They are not requirements.\nPermitted changes the audit may recommend (each needs explicit human approval):\n- A higher daily review capacity, up to 260 transactions per day,\n  with one global threshold.\n- Separate thresholds for Website and Mobile App with the original daily capacity.\n- The two changes may not be combined.\nPreference: a compliant option that needs no extra review capacity is preferred. If none\nexists, the smallest verified capacity increase within the permitted range is preferred.",
+        "holdout": "A later holdout window exists. It is sealed, and no tool can read it."
+      }
+    },
+    {
+      "n": 2,
+      "turn": 2,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.5
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.5,
+        "overall_fraud_value_recall": 0.6403,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 258184.18,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9129
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 35199.28,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.2007
+          }
+        },
+        "flagged_transactions": 1874,
+        "daily_flags": {
+          "max": 85,
+          "max_date": "2026-08-13",
+          "mean": 66.9,
+          "min": 43,
+          "by_date": {
+            "2026-08-03": 67,
+            "2026-08-04": 60,
+            "2026-08-05": 68,
+            "2026-08-06": 75,
+            "2026-08-07": 67,
+            "2026-08-08": 75,
+            "2026-08-09": 66,
+            "2026-08-10": 58,
+            "2026-08-11": 56,
+            "2026-08-12": 65,
+            "2026-08-13": 85,
+            "2026-08-14": 81,
+            "2026-08-15": 76,
+            "2026-08-16": 74,
+            "2026-08-17": 57,
+            "2026-08-18": 43,
+            "2026-08-19": 59,
+            "2026-08-20": 59,
+            "2026-08-21": 71,
+            "2026-08-22": 77,
+            "2026-08-23": 74,
+            "2026-08-24": 70,
+            "2026-08-25": 66,
+            "2026-08-26": 59,
+            "2026-08-27": 56,
+            "2026-08-28": 79,
+            "2026-08-29": 74,
+            "2026-08-30": 57
+          }
+        },
+        "diagnostics": {
+          "precision": 0.8378,
+          "transaction_recall": 0.5493,
+          "true_positives": 1570,
+          "false_positives": 304
+        }
+      }
+    },
+    {
+      "n": 3,
+      "turn": 3,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.1
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.1,
+        "overall_fraud_value_recall": 0.8855,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 278016.93,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.983
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 127735.43,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7282
+          }
+        },
+        "flagged_transactions": 4962,
+        "daily_flags": {
+          "max": 214,
+          "max_date": "2026-08-29",
+          "mean": 177.2,
+          "min": 147,
+          "by_date": {
+            "2026-08-03": 165,
+            "2026-08-04": 163,
+            "2026-08-05": 150,
+            "2026-08-06": 181,
+            "2026-08-07": 184,
+            "2026-08-08": 209,
+            "2026-08-09": 163,
+            "2026-08-10": 173,
+            "2026-08-11": 161,
+            "2026-08-12": 170,
+            "2026-08-13": 207,
+            "2026-08-14": 198,
+            "2026-08-15": 202,
+            "2026-08-16": 177,
+            "2026-08-17": 155,
+            "2026-08-18": 147,
+            "2026-08-19": 166,
+            "2026-08-20": 157,
+            "2026-08-21": 179,
+            "2026-08-22": 206,
+            "2026-08-23": 200,
+            "2026-08-24": 177,
+            "2026-08-25": 150,
+            "2026-08-26": 171,
+            "2026-08-27": 162,
+            "2026-08-28": 198,
+            "2026-08-29": 214,
+            "2026-08-30": 177
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4524,
+          "transaction_recall": 0.7855,
+          "true_positives": 2245,
+          "false_positives": 2717
+        }
+      }
+    },
+    {
+      "n": 4,
+      "turn": 3,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.2
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.2,
+        "overall_fraud_value_recall": 0.8024,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 272029.24,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9618
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 95641.77,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.5453
+          }
+        },
+        "flagged_transactions": 3136,
+        "daily_flags": {
+          "max": 143,
+          "max_date": "2026-08-29",
+          "mean": 112.0,
+          "min": 88,
+          "by_date": {
+            "2026-08-03": 97,
+            "2026-08-04": 104,
+            "2026-08-05": 102,
+            "2026-08-06": 109,
+            "2026-08-07": 123,
+            "2026-08-08": 132,
+            "2026-08-09": 106,
+            "2026-08-10": 100,
+            "2026-08-11": 91,
+            "2026-08-12": 122,
+            "2026-08-13": 137,
+            "2026-08-14": 127,
+            "2026-08-15": 121,
+            "2026-08-16": 112,
+            "2026-08-17": 97,
+            "2026-08-18": 88,
+            "2026-08-19": 103,
+            "2026-08-20": 102,
+            "2026-08-21": 118,
+            "2026-08-22": 128,
+            "2026-08-23": 119,
+            "2026-08-24": 108,
+            "2026-08-25": 101,
+            "2026-08-26": 102,
+            "2026-08-27": 98,
+            "2026-08-28": 127,
+            "2026-08-29": 143,
+            "2026-08-30": 119
+          }
+        },
+        "diagnostics": {
+          "precision": 0.6311,
+          "transaction_recall": 0.6924,
+          "true_positives": 1979,
+          "false_positives": 1157
+        }
+      }
+    },
+    {
+      "n": 5,
+      "turn": 3,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.3
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.3,
+        "overall_fraud_value_recall": 0.7434,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 267322.42,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9452
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 73315.17,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.418
+          }
+        },
+        "flagged_transactions": 2487,
+        "daily_flags": {
+          "max": 110,
+          "max_date": "2026-08-29",
+          "mean": 88.8,
+          "min": 64,
+          "by_date": {
+            "2026-08-03": 80,
+            "2026-08-04": 79,
+            "2026-08-05": 85,
+            "2026-08-06": 91,
+            "2026-08-07": 96,
+            "2026-08-08": 102,
+            "2026-08-09": 83,
+            "2026-08-10": 80,
+            "2026-08-11": 79,
+            "2026-08-12": 97,
+            "2026-08-13": 107,
+            "2026-08-14": 102,
+            "2026-08-15": 98,
+            "2026-08-16": 94,
+            "2026-08-17": 70,
+            "2026-08-18": 64,
+            "2026-08-19": 79,
+            "2026-08-20": 84,
+            "2026-08-21": 94,
+            "2026-08-22": 104,
+            "2026-08-23": 91,
+            "2026-08-24": 92,
+            "2026-08-25": 80,
+            "2026-08-26": 85,
+            "2026-08-27": 82,
+            "2026-08-28": 98,
+            "2026-08-29": 110,
+            "2026-08-30": 81
+          }
+        },
+        "diagnostics": {
+          "precision": 0.7262,
+          "transaction_recall": 0.6319,
+          "true_positives": 1806,
+          "false_positives": 681
+        }
+      }
+    },
+    {
+      "n": 6,
+      "turn": 3,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.4
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.4,
+        "overall_fraud_value_recall": 0.6933,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 263398.05,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9313
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 54299.66,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.3096
+          }
+        },
+        "flagged_transactions": 2119,
+        "daily_flags": {
+          "max": 90,
+          "max_date": "2026-08-13",
+          "mean": 75.7,
+          "min": 53,
+          "by_date": {
+            "2026-08-03": 72,
+            "2026-08-04": 68,
+            "2026-08-05": 73,
+            "2026-08-06": 79,
+            "2026-08-07": 75,
+            "2026-08-08": 84,
+            "2026-08-09": 70,
+            "2026-08-10": 63,
+            "2026-08-11": 67,
+            "2026-08-12": 77,
+            "2026-08-13": 90,
+            "2026-08-14": 88,
+            "2026-08-15": 86,
+            "2026-08-16": 84,
+            "2026-08-17": 63,
+            "2026-08-18": 53,
+            "2026-08-19": 70,
+            "2026-08-20": 73,
+            "2026-08-21": 78,
+            "2026-08-22": 90,
+            "2026-08-23": 80,
+            "2026-08-24": 79,
+            "2026-08-25": 75,
+            "2026-08-26": 72,
+            "2026-08-27": 68,
+            "2026-08-28": 86,
+            "2026-08-29": 90,
+            "2026-08-30": 66
+          }
+        },
+        "diagnostics": {
+          "precision": 0.7957,
+          "transaction_recall": 0.5899,
+          "true_positives": 1686,
+          "false_positives": 433
+        }
+      }
+    },
+    {
+      "n": 7,
+      "turn": 4,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.11
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.11,
+        "overall_fraud_value_recall": 0.8732,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 277609.42,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9816
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 122537.88,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.6986
+          }
+        },
+        "flagged_transactions": 4662,
+        "daily_flags": {
+          "max": 204,
+          "max_date": "2026-08-29",
+          "mean": 166.5,
+          "min": 138,
+          "by_date": {
+            "2026-08-03": 156,
+            "2026-08-04": 153,
+            "2026-08-05": 140,
+            "2026-08-06": 161,
+            "2026-08-07": 178,
+            "2026-08-08": 200,
+            "2026-08-09": 150,
+            "2026-08-10": 161,
+            "2026-08-11": 149,
+            "2026-08-12": 161,
+            "2026-08-13": 195,
+            "2026-08-14": 191,
+            "2026-08-15": 189,
+            "2026-08-16": 165,
+            "2026-08-17": 149,
+            "2026-08-18": 138,
+            "2026-08-19": 156,
+            "2026-08-20": 151,
+            "2026-08-21": 166,
+            "2026-08-22": 193,
+            "2026-08-23": 184,
+            "2026-08-24": 163,
+            "2026-08-25": 140,
+            "2026-08-26": 159,
+            "2026-08-27": 150,
+            "2026-08-28": 191,
+            "2026-08-29": 204,
+            "2026-08-30": 169
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4734,
+          "transaction_recall": 0.7722,
+          "true_positives": 2207,
+          "false_positives": 2455
+        }
+      }
+    },
+    {
+      "n": 8,
+      "turn": 4,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.12
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.12,
+        "overall_fraud_value_recall": 0.8664,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 277554.82,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9814
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 119450.46,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.681
+          }
+        },
+        "flagged_transactions": 4442,
+        "daily_flags": {
+          "max": 198,
+          "max_date": "2026-08-29",
+          "mean": 158.6,
+          "min": 126,
+          "by_date": {
+            "2026-08-03": 145,
+            "2026-08-04": 146,
+            "2026-08-05": 135,
+            "2026-08-06": 149,
+            "2026-08-07": 169,
+            "2026-08-08": 189,
+            "2026-08-09": 145,
+            "2026-08-10": 149,
+            "2026-08-11": 138,
+            "2026-08-12": 154,
+            "2026-08-13": 186,
+            "2026-08-14": 181,
+            "2026-08-15": 180,
+            "2026-08-16": 157,
+            "2026-08-17": 143,
+            "2026-08-18": 126,
+            "2026-08-19": 148,
+            "2026-08-20": 146,
+            "2026-08-21": 161,
+            "2026-08-22": 183,
+            "2026-08-23": 180,
+            "2026-08-24": 156,
+            "2026-08-25": 134,
+            "2026-08-26": 152,
+            "2026-08-27": 143,
+            "2026-08-28": 185,
+            "2026-08-29": 198,
+            "2026-08-30": 164
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4926,
+          "transaction_recall": 0.7656,
+          "true_positives": 2188,
+          "false_positives": 2254
+        }
+      }
+    },
+    {
+      "n": 9,
+      "turn": 4,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.13
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.13,
+        "overall_fraud_value_recall": 0.8576,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 276340.46,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9771
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 116655.81,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.6651
+          }
+        },
+        "flagged_transactions": 4222,
+        "daily_flags": {
+          "max": 191,
+          "max_date": "2026-08-29",
+          "mean": 150.8,
+          "min": 122,
+          "by_date": {
+            "2026-08-03": 137,
+            "2026-08-04": 140,
+            "2026-08-05": 128,
+            "2026-08-06": 137,
+            "2026-08-07": 164,
+            "2026-08-08": 178,
+            "2026-08-09": 139,
+            "2026-08-10": 140,
+            "2026-08-11": 132,
+            "2026-08-12": 150,
+            "2026-08-13": 180,
+            "2026-08-14": 168,
+            "2026-08-15": 174,
+            "2026-08-16": 149,
+            "2026-08-17": 132,
+            "2026-08-18": 122,
+            "2026-08-19": 144,
+            "2026-08-20": 139,
+            "2026-08-21": 153,
+            "2026-08-22": 175,
+            "2026-08-23": 167,
+            "2026-08-24": 148,
+            "2026-08-25": 127,
+            "2026-08-26": 142,
+            "2026-08-27": 139,
+            "2026-08-28": 173,
+            "2026-08-29": 191,
+            "2026-08-30": 154
+          }
+        },
+        "diagnostics": {
+          "precision": 0.5121,
+          "transaction_recall": 0.7565,
+          "true_positives": 2162,
+          "false_positives": 2060
+        }
+      }
+    },
+    {
+      "n": 10,
+      "turn": 4,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.14
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.14,
+        "overall_fraud_value_recall": 0.8475,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 275505.15,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9741
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 112858.32,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.6434
+          }
+        },
+        "flagged_transactions": 3994,
+        "daily_flags": {
+          "max": 183,
+          "max_date": "2026-08-29",
+          "mean": 142.6,
+          "min": 111,
+          "by_date": {
+            "2026-08-03": 132,
+            "2026-08-04": 135,
+            "2026-08-05": 121,
+            "2026-08-06": 133,
+            "2026-08-07": 157,
+            "2026-08-08": 166,
+            "2026-08-09": 133,
+            "2026-08-10": 130,
+            "2026-08-11": 125,
+            "2026-08-12": 146,
+            "2026-08-13": 173,
+            "2026-08-14": 163,
+            "2026-08-15": 161,
+            "2026-08-16": 136,
+            "2026-08-17": 123,
+            "2026-08-18": 111,
+            "2026-08-19": 136,
+            "2026-08-20": 132,
+            "2026-08-21": 146,
+            "2026-08-22": 167,
+            "2026-08-23": 154,
+            "2026-08-24": 140,
+            "2026-08-25": 122,
+            "2026-08-26": 132,
+            "2026-08-27": 130,
+            "2026-08-28": 163,
+            "2026-08-29": 183,
+            "2026-08-30": 144
+          }
+        },
+        "diagnostics": {
+          "precision": 0.5315,
+          "transaction_recall": 0.7428,
+          "true_positives": 2123,
+          "false_positives": 1871
+        }
+      }
+    },
+    {
+      "n": 11,
+      "turn": 4,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.15
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.15,
+        "overall_fraud_value_recall": 0.842,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 274941.66,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9721
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 110877.77,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.6321
+          }
+        },
+        "flagged_transactions": 3841,
+        "daily_flags": {
+          "max": 174,
+          "max_date": "2026-08-29",
+          "mean": 137.2,
+          "min": 105,
+          "by_date": {
+            "2026-08-03": 126,
+            "2026-08-04": 128,
+            "2026-08-05": 117,
+            "2026-08-06": 130,
+            "2026-08-07": 152,
+            "2026-08-08": 161,
+            "2026-08-09": 129,
+            "2026-08-10": 120,
+            "2026-08-11": 121,
+            "2026-08-12": 141,
+            "2026-08-13": 166,
+            "2026-08-14": 152,
+            "2026-08-15": 153,
+            "2026-08-16": 132,
+            "2026-08-17": 122,
+            "2026-08-18": 105,
+            "2026-08-19": 133,
+            "2026-08-20": 130,
+            "2026-08-21": 144,
+            "2026-08-22": 159,
+            "2026-08-23": 147,
+            "2026-08-24": 133,
+            "2026-08-25": 118,
+            "2026-08-26": 128,
+            "2026-08-27": 126,
+            "2026-08-28": 160,
+            "2026-08-29": 174,
+            "2026-08-30": 134
+          }
+        },
+        "diagnostics": {
+          "precision": 0.5478,
+          "transaction_recall": 0.7362,
+          "true_positives": 2104,
+          "false_positives": 1737
+        }
+      }
+    },
+    {
+      "n": 12,
+      "turn": 5,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.105
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.105,
+        "overall_fraud_value_recall": 0.877,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 277825.3,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9823
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 124057.28,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7073
+          }
+        },
+        "flagged_transactions": 4802,
+        "daily_flags": {
+          "max": 210,
+          "max_date": "2026-08-29",
+          "mean": 171.5,
+          "min": 144,
+          "by_date": {
+            "2026-08-03": 160,
+            "2026-08-04": 159,
+            "2026-08-05": 145,
+            "2026-08-06": 166,
+            "2026-08-07": 182,
+            "2026-08-08": 202,
+            "2026-08-09": 152,
+            "2026-08-10": 168,
+            "2026-08-11": 155,
+            "2026-08-12": 166,
+            "2026-08-13": 203,
+            "2026-08-14": 196,
+            "2026-08-15": 193,
+            "2026-08-16": 170,
+            "2026-08-17": 153,
+            "2026-08-18": 144,
+            "2026-08-19": 160,
+            "2026-08-20": 154,
+            "2026-08-21": 173,
+            "2026-08-22": 199,
+            "2026-08-23": 188,
+            "2026-08-24": 169,
+            "2026-08-25": 147,
+            "2026-08-26": 165,
+            "2026-08-27": 156,
+            "2026-08-28": 194,
+            "2026-08-29": 210,
+            "2026-08-30": 173
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4631,
+          "transaction_recall": 0.7782,
+          "true_positives": 2224,
+          "false_positives": 2578
+        }
+      }
+    },
+    {
+      "n": 13,
+      "turn": 5,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.108
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.108,
+        "overall_fraud_value_recall": 0.8745,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 277825.3,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9823
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 122916.85,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7008
+          }
+        },
+        "flagged_transactions": 4718,
+        "daily_flags": {
+          "max": 205,
+          "max_date": "2026-08-29",
+          "mean": 168.5,
+          "min": 140,
+          "by_date": {
+            "2026-08-03": 157,
+            "2026-08-04": 155,
+            "2026-08-05": 142,
+            "2026-08-06": 164,
+            "2026-08-07": 180,
+            "2026-08-08": 200,
+            "2026-08-09": 150,
+            "2026-08-10": 164,
+            "2026-08-11": 152,
+            "2026-08-12": 164,
+            "2026-08-13": 199,
+            "2026-08-14": 193,
+            "2026-08-15": 191,
+            "2026-08-16": 169,
+            "2026-08-17": 151,
+            "2026-08-18": 140,
+            "2026-08-19": 158,
+            "2026-08-20": 151,
+            "2026-08-21": 168,
+            "2026-08-22": 198,
+            "2026-08-23": 184,
+            "2026-08-24": 165,
+            "2026-08-25": 142,
+            "2026-08-26": 164,
+            "2026-08-27": 151,
+            "2026-08-28": 192,
+            "2026-08-29": 205,
+            "2026-08-30": 169
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4693,
+          "transaction_recall": 0.7747,
+          "true_positives": 2214,
+          "false_positives": 2504
+        }
+      }
+    },
+    {
+      "n": 14,
+      "turn": 5,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.109
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.109,
+        "overall_fraud_value_recall": 0.8741,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 277825.3,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9823
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 122721.22,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.6996
+          }
+        },
+        "flagged_transactions": 4685,
+        "daily_flags": {
+          "max": 205,
+          "max_date": "2026-08-29",
+          "mean": 167.3,
+          "min": 139,
+          "by_date": {
+            "2026-08-03": 156,
+            "2026-08-04": 154,
+            "2026-08-05": 140,
+            "2026-08-06": 161,
+            "2026-08-07": 179,
+            "2026-08-08": 200,
+            "2026-08-09": 150,
+            "2026-08-10": 162,
+            "2026-08-11": 151,
+            "2026-08-12": 163,
+            "2026-08-13": 197,
+            "2026-08-14": 191,
+            "2026-08-15": 191,
+            "2026-08-16": 166,
+            "2026-08-17": 149,
+            "2026-08-18": 139,
+            "2026-08-19": 158,
+            "2026-08-20": 151,
+            "2026-08-21": 167,
+            "2026-08-22": 195,
+            "2026-08-23": 184,
+            "2026-08-24": 165,
+            "2026-08-25": 141,
+            "2026-08-26": 160,
+            "2026-08-27": 150,
+            "2026-08-28": 191,
+            "2026-08-29": 205,
+            "2026-08-30": 169
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4721,
+          "transaction_recall": 0.774,
+          "true_positives": 2212,
+          "false_positives": 2473
+        }
+      }
+    },
+    {
+      "n": 15,
+      "turn": 5,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.114
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.114,
+        "overall_fraud_value_recall": 0.8702,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 277609.42,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9816
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 121136.69,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.6906
+          }
+        },
+        "flagged_transactions": 4576,
+        "daily_flags": {
+          "max": 203,
+          "max_date": "2026-08-29",
+          "mean": 163.4,
+          "min": 137,
+          "by_date": {
+            "2026-08-03": 153,
+            "2026-08-04": 150,
+            "2026-08-05": 137,
+            "2026-08-06": 156,
+            "2026-08-07": 174,
+            "2026-08-08": 196,
+            "2026-08-09": 147,
+            "2026-08-10": 156,
+            "2026-08-11": 145,
+            "2026-08-12": 157,
+            "2026-08-13": 191,
+            "2026-08-14": 187,
+            "2026-08-15": 185,
+            "2026-08-16": 162,
+            "2026-08-17": 143,
+            "2026-08-18": 137,
+            "2026-08-19": 153,
+            "2026-08-20": 148,
+            "2026-08-21": 166,
+            "2026-08-22": 189,
+            "2026-08-23": 182,
+            "2026-08-24": 160,
+            "2026-08-25": 139,
+            "2026-08-26": 157,
+            "2026-08-27": 146,
+            "2026-08-28": 189,
+            "2026-08-29": 203,
+            "2026-08-30": 168
+          }
+        },
+        "diagnostics": {
+          "precision": 0.481,
+          "transaction_recall": 0.7701,
+          "true_positives": 2201,
+          "false_positives": 2375
+        }
+      }
+    },
+    {
+      "n": 16,
+      "turn": 5,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.116
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.116,
+        "overall_fraud_value_recall": 0.868,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 277609.42,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9816
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 120130.95,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.6849
+          }
+        },
+        "flagged_transactions": 4534,
+        "daily_flags": {
+          "max": 201,
+          "max_date": "2026-08-29",
+          "mean": 161.9,
+          "min": 134,
+          "by_date": {
+            "2026-08-03": 150,
+            "2026-08-04": 150,
+            "2026-08-05": 137,
+            "2026-08-06": 155,
+            "2026-08-07": 171,
+            "2026-08-08": 193,
+            "2026-08-09": 147,
+            "2026-08-10": 155,
+            "2026-08-11": 142,
+            "2026-08-12": 155,
+            "2026-08-13": 189,
+            "2026-08-14": 186,
+            "2026-08-15": 184,
+            "2026-08-16": 160,
+            "2026-08-17": 143,
+            "2026-08-18": 134,
+            "2026-08-19": 151,
+            "2026-08-20": 148,
+            "2026-08-21": 163,
+            "2026-08-22": 186,
+            "2026-08-23": 180,
+            "2026-08-24": 160,
+            "2026-08-25": 135,
+            "2026-08-26": 157,
+            "2026-08-27": 145,
+            "2026-08-28": 189,
+            "2026-08-29": 201,
+            "2026-08-30": 168
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4846,
+          "transaction_recall": 0.7687,
+          "true_positives": 2197,
+          "false_positives": 2337
+        }
+      }
+    },
+    {
+      "n": 17,
+      "turn": 6,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.117
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.117,
+        "overall_fraud_value_recall": 0.8677,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 277554.82,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9814
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 120053.03,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.6844
+          }
+        },
+        "flagged_transactions": 4503,
+        "daily_flags": {
+          "max": 201,
+          "max_date": "2026-08-29",
+          "mean": 160.8,
+          "min": 133,
+          "by_date": {
+            "2026-08-03": 147,
+            "2026-08-04": 148,
+            "2026-08-05": 135,
+            "2026-08-06": 154,
+            "2026-08-07": 171,
+            "2026-08-08": 191,
+            "2026-08-09": 146,
+            "2026-08-10": 154,
+            "2026-08-11": 141,
+            "2026-08-12": 154,
+            "2026-08-13": 188,
+            "2026-08-14": 184,
+            "2026-08-15": 182,
+            "2026-08-16": 159,
+            "2026-08-17": 143,
+            "2026-08-18": 133,
+            "2026-08-19": 149,
+            "2026-08-20": 147,
+            "2026-08-21": 161,
+            "2026-08-22": 186,
+            "2026-08-23": 180,
+            "2026-08-24": 159,
+            "2026-08-25": 134,
+            "2026-08-26": 156,
+            "2026-08-27": 144,
+            "2026-08-28": 189,
+            "2026-08-29": 201,
+            "2026-08-30": 167
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4875,
+          "transaction_recall": 0.768,
+          "true_positives": 2195,
+          "false_positives": 2308
+        }
+      }
+    },
+    {
+      "n": 18,
+      "turn": 6,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.118
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.118,
+        "overall_fraud_value_recall": 0.8671,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 277554.82,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9814
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 119790.72,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.6829
+          }
+        },
+        "flagged_transactions": 4487,
+        "daily_flags": {
+          "max": 200,
+          "max_date": "2026-08-29",
+          "mean": 160.2,
+          "min": 132,
+          "by_date": {
+            "2026-08-03": 147,
+            "2026-08-04": 148,
+            "2026-08-05": 135,
+            "2026-08-06": 153,
+            "2026-08-07": 171,
+            "2026-08-08": 191,
+            "2026-08-09": 146,
+            "2026-08-10": 150,
+            "2026-08-11": 139,
+            "2026-08-12": 154,
+            "2026-08-13": 188,
+            "2026-08-14": 184,
+            "2026-08-15": 182,
+            "2026-08-16": 158,
+            "2026-08-17": 143,
+            "2026-08-18": 132,
+            "2026-08-19": 148,
+            "2026-08-20": 147,
+            "2026-08-21": 161,
+            "2026-08-22": 185,
+            "2026-08-23": 180,
+            "2026-08-24": 158,
+            "2026-08-25": 134,
+            "2026-08-26": 156,
+            "2026-08-27": 144,
+            "2026-08-28": 188,
+            "2026-08-29": 200,
+            "2026-08-30": 165
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4883,
+          "transaction_recall": 0.7666,
+          "true_positives": 2191,
+          "false_positives": 2296
+        }
+      }
+    },
+    {
+      "n": 19,
+      "turn": 6,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.119
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.119,
+        "overall_fraud_value_recall": 0.8664,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 277554.82,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9814
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 119450.46,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.681
+          }
+        },
+        "flagged_transactions": 4452,
+        "daily_flags": {
+          "max": 198,
+          "max_date": "2026-08-29",
+          "mean": 159.0,
+          "min": 127,
+          "by_date": {
+            "2026-08-03": 145,
+            "2026-08-04": 147,
+            "2026-08-05": 135,
+            "2026-08-06": 149,
+            "2026-08-07": 170,
+            "2026-08-08": 190,
+            "2026-08-09": 145,
+            "2026-08-10": 149,
+            "2026-08-11": 138,
+            "2026-08-12": 154,
+            "2026-08-13": 186,
+            "2026-08-14": 182,
+            "2026-08-15": 181,
+            "2026-08-16": 157,
+            "2026-08-17": 143,
+            "2026-08-18": 127,
+            "2026-08-19": 148,
+            "2026-08-20": 147,
+            "2026-08-21": 161,
+            "2026-08-22": 184,
+            "2026-08-23": 180,
+            "2026-08-24": 157,
+            "2026-08-25": 134,
+            "2026-08-26": 152,
+            "2026-08-27": 143,
+            "2026-08-28": 186,
+            "2026-08-29": 198,
+            "2026-08-30": 164
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4915,
+          "transaction_recall": 0.7656,
+          "true_positives": 2188,
+          "false_positives": 2264
+        }
+      }
+    },
+    {
+      "n": 20,
+      "turn": 6,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.137
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.137,
+        "overall_fraud_value_recall": 0.8513,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 275658.04,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9747
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 114434.32,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.6524
+          }
+        },
+        "flagged_transactions": 4068,
+        "daily_flags": {
+          "max": 184,
+          "max_date": "2026-08-29",
+          "mean": 145.3,
+          "min": 114,
+          "by_date": {
+            "2026-08-03": 133,
+            "2026-08-04": 136,
+            "2026-08-05": 124,
+            "2026-08-06": 133,
+            "2026-08-07": 160,
+            "2026-08-08": 170,
+            "2026-08-09": 136,
+            "2026-08-10": 133,
+            "2026-08-11": 126,
+            "2026-08-12": 147,
+            "2026-08-13": 173,
+            "2026-08-14": 165,
+            "2026-08-15": 168,
+            "2026-08-16": 142,
+            "2026-08-17": 128,
+            "2026-08-18": 114,
+            "2026-08-19": 139,
+            "2026-08-20": 134,
+            "2026-08-21": 148,
+            "2026-08-22": 171,
+            "2026-08-23": 159,
+            "2026-08-24": 142,
+            "2026-08-25": 123,
+            "2026-08-26": 135,
+            "2026-08-27": 133,
+            "2026-08-28": 167,
+            "2026-08-29": 184,
+            "2026-08-30": 145
+          }
+        },
+        "diagnostics": {
+          "precision": 0.5256,
+          "transaction_recall": 0.7481,
+          "true_positives": 2138,
+          "false_positives": 1930
+        }
+      }
+    },
+    {
+      "n": 21,
+      "turn": 6,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.138
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.138,
+        "overall_fraud_value_recall": 0.8489,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 275605.55,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9745
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 113368.16,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.6463
+          }
+        },
+        "flagged_transactions": 4036,
+        "daily_flags": {
+          "max": 184,
+          "max_date": "2026-08-29",
+          "mean": 144.1,
+          "min": 113,
+          "by_date": {
+            "2026-08-03": 132,
+            "2026-08-04": 136,
+            "2026-08-05": 123,
+            "2026-08-06": 133,
+            "2026-08-07": 158,
+            "2026-08-08": 168,
+            "2026-08-09": 136,
+            "2026-08-10": 131,
+            "2026-08-11": 126,
+            "2026-08-12": 147,
+            "2026-08-13": 173,
+            "2026-08-14": 163,
+            "2026-08-15": 165,
+            "2026-08-16": 139,
+            "2026-08-17": 125,
+            "2026-08-18": 113,
+            "2026-08-19": 137,
+            "2026-08-20": 134,
+            "2026-08-21": 148,
+            "2026-08-22": 170,
+            "2026-08-23": 156,
+            "2026-08-24": 142,
+            "2026-08-25": 123,
+            "2026-08-26": 134,
+            "2026-08-27": 130,
+            "2026-08-28": 165,
+            "2026-08-29": 184,
+            "2026-08-30": 145
+          }
+        },
+        "diagnostics": {
+          "precision": 0.5273,
+          "transaction_recall": 0.7446,
+          "true_positives": 2128,
+          "false_positives": 1908
+        }
+      }
+    },
+    {
+      "n": 22,
+      "turn": 7,
+      "name": "evaluate_policy_change",
+      "arguments": {
+        "change_type": "channel_thresholds",
+        "mobile_app_threshold": 0.108,
+        "website_threshold": 0.3
+      },
+      "is_error": false,
+      "result": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.3,
+        "mobile_app_threshold": 0.108,
+        "daily_capacity": 200,
+        "overall_fraud_value_recall": 0.8516,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 267322.42,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9452
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 122916.85,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7008
+          }
+        },
+        "flagged_transactions": 4227,
+        "daily_flags": {
+          "max": 185,
+          "max_date": "2026-08-22",
+          "mean": 151.0,
+          "min": 127,
+          "by_date": {
+            "2026-08-03": 142,
+            "2026-08-04": 132,
+            "2026-08-05": 130,
+            "2026-08-06": 149,
+            "2026-08-07": 160,
+            "2026-08-08": 175,
+            "2026-08-09": 142,
+            "2026-08-10": 141,
+            "2026-08-11": 134,
+            "2026-08-12": 150,
+            "2026-08-13": 173,
+            "2026-08-14": 172,
+            "2026-08-15": 178,
+            "2026-08-16": 153,
+            "2026-08-17": 134,
+            "2026-08-18": 127,
+            "2026-08-19": 140,
+            "2026-08-20": 132,
+            "2026-08-21": 152,
+            "2026-08-22": 185,
+            "2026-08-23": 159,
+            "2026-08-24": 149,
+            "2026-08-25": 128,
+            "2026-08-26": 151,
+            "2026-08-27": 132,
+            "2026-08-28": 175,
+            "2026-08-29": 184,
+            "2026-08-30": 148
+          }
+        },
+        "diagnostics": {
+          "precision": 0.498,
+          "transaction_recall": 0.7365,
+          "true_positives": 2105,
+          "false_positives": 2122
+        }
+      }
+    },
+    {
+      "n": 23,
+      "turn": 7,
+      "name": "evaluate_policy_change",
+      "arguments": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.25,
+        "mobile_app_threshold": 0.108
+      },
+      "is_error": false,
+      "result": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.25,
+        "mobile_app_threshold": 0.108,
+        "daily_capacity": 200,
+        "overall_fraud_value_recall": 0.8567,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 269661.48,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9535
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 122916.85,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7008
+          }
+        },
+        "flagged_transactions": 4302,
+        "daily_flags": {
+          "max": 188,
+          "max_date": "2026-08-29",
+          "mean": 153.6,
+          "min": 130,
+          "by_date": {
+            "2026-08-03": 144,
+            "2026-08-04": 135,
+            "2026-08-05": 134,
+            "2026-08-06": 152,
+            "2026-08-07": 163,
+            "2026-08-08": 181,
+            "2026-08-09": 142,
+            "2026-08-10": 142,
+            "2026-08-11": 137,
+            "2026-08-12": 153,
+            "2026-08-13": 176,
+            "2026-08-14": 174,
+            "2026-08-15": 182,
+            "2026-08-16": 154,
+            "2026-08-17": 137,
+            "2026-08-18": 130,
+            "2026-08-19": 145,
+            "2026-08-20": 134,
+            "2026-08-21": 155,
+            "2026-08-22": 186,
+            "2026-08-23": 161,
+            "2026-08-24": 151,
+            "2026-08-25": 132,
+            "2026-08-26": 151,
+            "2026-08-27": 135,
+            "2026-08-28": 177,
+            "2026-08-29": 188,
+            "2026-08-30": 151
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4951,
+          "transaction_recall": 0.7453,
+          "true_positives": 2130,
+          "false_positives": 2172
+        }
+      }
+    },
+    {
+      "n": 24,
+      "turn": 7,
+      "name": "evaluate_policy_change",
+      "arguments": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.25,
+        "mobile_app_threshold": 0.1
+      },
+      "is_error": false,
+      "result": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.25,
+        "mobile_app_threshold": 0.1,
+        "daily_capacity": 200,
+        "overall_fraud_value_recall": 0.8672,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 269661.48,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9535
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 127735.43,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7282
+          }
+        },
+        "flagged_transactions": 4500,
+        "daily_flags": {
+          "max": 195,
+          "max_date": "2026-08-29",
+          "mean": 160.7,
+          "min": 136,
+          "by_date": {
+            "2026-08-03": 152,
+            "2026-08-04": 142,
+            "2026-08-05": 142,
+            "2026-08-06": 167,
+            "2026-08-07": 167,
+            "2026-08-08": 188,
+            "2026-08-09": 154,
+            "2026-08-10": 149,
+            "2026-08-11": 143,
+            "2026-08-12": 158,
+            "2026-08-13": 183,
+            "2026-08-14": 177,
+            "2026-08-15": 189,
+            "2026-08-16": 160,
+            "2026-08-17": 141,
+            "2026-08-18": 136,
+            "2026-08-19": 151,
+            "2026-08-20": 139,
+            "2026-08-21": 164,
+            "2026-08-22": 191,
+            "2026-08-23": 173,
+            "2026-08-24": 160,
+            "2026-08-25": 137,
+            "2026-08-26": 157,
+            "2026-08-27": 144,
+            "2026-08-28": 183,
+            "2026-08-29": 195,
+            "2026-08-30": 158
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4796,
+          "transaction_recall": 0.7551,
+          "true_positives": 2158,
+          "false_positives": 2342
+        }
+      }
+    },
+    {
+      "n": 25,
+      "turn": 7,
+      "name": "evaluate_policy_change",
+      "arguments": {
+        "change_type": "capacity_increase",
+        "daily_capacity": 205,
+        "threshold": 0.108
+      },
+      "is_error": false,
+      "result": {
+        "change_type": "capacity_increase",
+        "threshold": 0.108,
+        "daily_capacity": 205,
+        "overall_fraud_value_recall": 0.8745,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 277825.3,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9823
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 122916.85,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7008
+          }
+        },
+        "flagged_transactions": 4718,
+        "daily_flags": {
+          "max": 205,
+          "max_date": "2026-08-29",
+          "mean": 168.5,
+          "min": 140,
+          "by_date": {
+            "2026-08-03": 157,
+            "2026-08-04": 155,
+            "2026-08-05": 142,
+            "2026-08-06": 164,
+            "2026-08-07": 180,
+            "2026-08-08": 200,
+            "2026-08-09": 150,
+            "2026-08-10": 164,
+            "2026-08-11": 152,
+            "2026-08-12": 164,
+            "2026-08-13": 199,
+            "2026-08-14": 193,
+            "2026-08-15": 191,
+            "2026-08-16": 169,
+            "2026-08-17": 151,
+            "2026-08-18": 140,
+            "2026-08-19": 158,
+            "2026-08-20": 151,
+            "2026-08-21": 168,
+            "2026-08-22": 198,
+            "2026-08-23": 184,
+            "2026-08-24": 165,
+            "2026-08-25": 142,
+            "2026-08-26": 164,
+            "2026-08-27": 151,
+            "2026-08-28": 192,
+            "2026-08-29": 205,
+            "2026-08-30": 169
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4693,
+          "transaction_recall": 0.7747,
+          "true_positives": 2214,
+          "false_positives": 2504
+        }
+      }
+    },
+    {
+      "n": 26,
+      "turn": 8,
+      "name": "evaluate_policy_change",
+      "arguments": {
+        "mobile_app_threshold": 0.1,
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.2
+      },
+      "is_error": false,
+      "result": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.2,
+        "mobile_app_threshold": 0.1,
+        "daily_capacity": 200,
+        "overall_fraud_value_recall": 0.8724,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 272029.24,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9618
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 127735.43,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7282
+          }
+        },
+        "flagged_transactions": 4607,
+        "daily_flags": {
+          "max": 200,
+          "max_date": "2026-08-29",
+          "mean": 164.5,
+          "min": 139,
+          "by_date": {
+            "2026-08-03": 154,
+            "2026-08-04": 147,
+            "2026-08-05": 144,
+            "2026-08-06": 171,
+            "2026-08-07": 168,
+            "2026-08-08": 194,
+            "2026-08-09": 156,
+            "2026-08-10": 154,
+            "2026-08-11": 147,
+            "2026-08-12": 160,
+            "2026-08-13": 188,
+            "2026-08-14": 179,
+            "2026-08-15": 193,
+            "2026-08-16": 163,
+            "2026-08-17": 146,
+            "2026-08-18": 139,
+            "2026-08-19": 153,
+            "2026-08-20": 142,
+            "2026-08-21": 170,
+            "2026-08-22": 194,
+            "2026-08-23": 178,
+            "2026-08-24": 161,
+            "2026-08-25": 140,
+            "2026-08-26": 159,
+            "2026-08-27": 147,
+            "2026-08-28": 190,
+            "2026-08-29": 200,
+            "2026-08-30": 170
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4751,
+          "transaction_recall": 0.7659,
+          "true_positives": 2189,
+          "false_positives": 2418
+        }
+      }
+    },
+    {
+      "n": 27,
+      "turn": 8,
+      "name": "evaluate_policy_change",
+      "arguments": {
+        "change_type": "channel_thresholds",
+        "mobile_app_threshold": 0.095,
+        "website_threshold": 0.25
+      },
+      "is_error": false,
+      "result": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.25,
+        "mobile_app_threshold": 0.095,
+        "daily_capacity": 200,
+        "overall_fraud_value_recall": 0.8748,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 269661.48,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9535
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 131175.11,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7478
+          }
+        },
+        "flagged_transactions": 4669,
+        "daily_flags": {
+          "max": 205,
+          "max_date": "2026-08-29",
+          "mean": 166.8,
+          "min": 140,
+          "by_date": {
+            "2026-08-03": 159,
+            "2026-08-04": 146,
+            "2026-08-05": 146,
+            "2026-08-06": 169,
+            "2026-08-07": 172,
+            "2026-08-08": 199,
+            "2026-08-09": 167,
+            "2026-08-10": 151,
+            "2026-08-11": 149,
+            "2026-08-12": 166,
+            "2026-08-13": 189,
+            "2026-08-14": 185,
+            "2026-08-15": 194,
+            "2026-08-16": 166,
+            "2026-08-17": 144,
+            "2026-08-18": 140,
+            "2026-08-19": 156,
+            "2026-08-20": 143,
+            "2026-08-21": 173,
+            "2026-08-22": 196,
+            "2026-08-23": 177,
+            "2026-08-24": 169,
+            "2026-08-25": 141,
+            "2026-08-26": 162,
+            "2026-08-27": 151,
+            "2026-08-28": 186,
+            "2026-08-29": 205,
+            "2026-08-30": 168
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4671,
+          "transaction_recall": 0.7631,
+          "true_positives": 2181,
+          "false_positives": 2488
+        }
+      }
+    },
+    {
+      "n": 28,
+      "turn": 8,
+      "name": "evaluate_policy_change",
+      "arguments": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.2,
+        "mobile_app_threshold": 0.095
+      },
+      "is_error": false,
+      "result": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.2,
+        "mobile_app_threshold": 0.095,
+        "daily_capacity": 200,
+        "overall_fraud_value_recall": 0.8799,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 272029.24,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9618
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 131175.11,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7478
+          }
+        },
+        "flagged_transactions": 4776,
+        "daily_flags": {
+          "max": 210,
+          "max_date": "2026-08-29",
+          "mean": 170.6,
+          "min": 143,
+          "by_date": {
+            "2026-08-03": 161,
+            "2026-08-04": 151,
+            "2026-08-05": 148,
+            "2026-08-06": 173,
+            "2026-08-07": 173,
+            "2026-08-08": 205,
+            "2026-08-09": 169,
+            "2026-08-10": 156,
+            "2026-08-11": 153,
+            "2026-08-12": 168,
+            "2026-08-13": 194,
+            "2026-08-14": 187,
+            "2026-08-15": 198,
+            "2026-08-16": 169,
+            "2026-08-17": 149,
+            "2026-08-18": 143,
+            "2026-08-19": 158,
+            "2026-08-20": 146,
+            "2026-08-21": 179,
+            "2026-08-22": 199,
+            "2026-08-23": 182,
+            "2026-08-24": 170,
+            "2026-08-25": 144,
+            "2026-08-26": 164,
+            "2026-08-27": 154,
+            "2026-08-28": 193,
+            "2026-08-29": 210,
+            "2026-08-30": 180
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4631,
+          "transaction_recall": 0.774,
+          "true_positives": 2212,
+          "false_positives": 2564
+        }
+      }
+    },
+    {
+      "n": 29,
+      "turn": 8,
+      "name": "evaluate_policy_change",
+      "arguments": {
+        "website_threshold": 0.25,
+        "change_type": "channel_thresholds",
+        "mobile_app_threshold": 0.09
+      },
+      "is_error": false,
+      "result": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.25,
+        "mobile_app_threshold": 0.09,
+        "daily_capacity": 200,
+        "overall_fraud_value_recall": 0.8795,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 269661.48,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9535
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 133328.44,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7601
+          }
+        },
+        "flagged_transactions": 4819,
+        "daily_flags": {
+          "max": 214,
+          "max_date": "2026-08-29",
+          "mean": 172.1,
+          "min": 142,
+          "by_date": {
+            "2026-08-03": 160,
+            "2026-08-04": 154,
+            "2026-08-05": 150,
+            "2026-08-06": 171,
+            "2026-08-07": 182,
+            "2026-08-08": 208,
+            "2026-08-09": 172,
+            "2026-08-10": 157,
+            "2026-08-11": 153,
+            "2026-08-12": 168,
+            "2026-08-13": 196,
+            "2026-08-14": 192,
+            "2026-08-15": 197,
+            "2026-08-16": 178,
+            "2026-08-17": 149,
+            "2026-08-18": 147,
+            "2026-08-19": 161,
+            "2026-08-20": 145,
+            "2026-08-21": 181,
+            "2026-08-22": 206,
+            "2026-08-23": 183,
+            "2026-08-24": 171,
+            "2026-08-25": 142,
+            "2026-08-26": 166,
+            "2026-08-27": 155,
+            "2026-08-28": 189,
+            "2026-08-29": 214,
+            "2026-08-30": 172
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4561,
+          "transaction_recall": 0.7691,
+          "true_positives": 2198,
+          "false_positives": 2621
+        }
+      }
+    },
+    {
+      "n": 30,
+      "turn": 8,
+      "name": "evaluate_policy_change",
+      "arguments": {
+        "website_threshold": 0.2,
+        "mobile_app_threshold": 0.105,
+        "change_type": "channel_thresholds"
+      },
+      "is_error": false,
+      "result": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.2,
+        "mobile_app_threshold": 0.105,
+        "daily_capacity": 200,
+        "overall_fraud_value_recall": 0.8644,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 272029.24,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9618
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 124057.28,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7073
+          }
+        },
+        "flagged_transactions": 4479,
+        "daily_flags": {
+          "max": 196,
+          "max_date": "2026-08-29",
+          "mean": 160.0,
+          "min": 136,
+          "by_date": {
+            "2026-08-03": 149,
+            "2026-08-04": 144,
+            "2026-08-05": 139,
+            "2026-08-06": 158,
+            "2026-08-07": 166,
+            "2026-08-08": 189,
+            "2026-08-09": 146,
+            "2026-08-10": 151,
+            "2026-08-11": 142,
+            "2026-08-12": 156,
+            "2026-08-13": 185,
+            "2026-08-14": 177,
+            "2026-08-15": 188,
+            "2026-08-16": 158,
+            "2026-08-17": 144,
+            "2026-08-18": 136,
+            "2026-08-19": 148,
+            "2026-08-20": 140,
+            "2026-08-21": 164,
+            "2026-08-22": 190,
+            "2026-08-23": 168,
+            "2026-08-24": 156,
+            "2026-08-25": 139,
+            "2026-08-26": 154,
+            "2026-08-27": 143,
+            "2026-08-28": 186,
+            "2026-08-29": 196,
+            "2026-08-30": 167
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4847,
+          "transaction_recall": 0.7596,
+          "true_positives": 2171,
+          "false_positives": 2308
+        }
+      }
+    },
+    {
+      "n": 31,
+      "turn": 9,
+      "name": "evaluate_policy_change",
+      "arguments": {
+        "change_type": "channel_thresholds",
+        "mobile_app_threshold": 0.095,
+        "website_threshold": 0.35
+      },
+      "is_error": false,
+      "result": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.35,
+        "mobile_app_threshold": 0.095,
+        "daily_capacity": 200,
+        "overall_fraud_value_recall": 0.8676,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 266375.38,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9418
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 131175.11,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7478
+          }
+        },
+        "flagged_transactions": 4533,
+        "daily_flags": {
+          "max": 199,
+          "max_date": "2026-08-29",
+          "mean": 161.9,
+          "min": 136,
+          "by_date": {
+            "2026-08-03": 156,
+            "2026-08-04": 142,
+            "2026-08-05": 142,
+            "2026-08-06": 165,
+            "2026-08-07": 165,
+            "2026-08-08": 188,
+            "2026-08-09": 166,
+            "2026-08-10": 148,
+            "2026-08-11": 144,
+            "2026-08-12": 160,
+            "2026-08-13": 184,
+            "2026-08-14": 182,
+            "2026-08-15": 187,
+            "2026-08-16": 161,
+            "2026-08-17": 137,
+            "2026-08-18": 136,
+            "2026-08-19": 149,
+            "2026-08-20": 140,
+            "2026-08-21": 166,
+            "2026-08-22": 191,
+            "2026-08-23": 173,
+            "2026-08-24": 165,
+            "2026-08-25": 137,
+            "2026-08-26": 160,
+            "2026-08-27": 147,
+            "2026-08-28": 182,
+            "2026-08-29": 199,
+            "2026-08-30": 161
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4728,
+          "transaction_recall": 0.7498,
+          "true_positives": 2143,
+          "false_positives": 2390
+        }
+      }
+    },
+    {
+      "n": 32,
+      "turn": 9,
+      "name": "evaluate_policy_change",
+      "arguments": {
+        "mobile_app_threshold": 0.095,
+        "website_threshold": 0.4,
+        "change_type": "channel_thresholds"
+      },
+      "is_error": false,
+      "result": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.4,
+        "mobile_app_threshold": 0.095,
+        "daily_capacity": 200,
+        "overall_fraud_value_recall": 0.8611,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 263398.05,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9313
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 131175.11,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7478
+          }
+        },
+        "flagged_transactions": 4453,
+        "daily_flags": {
+          "max": 192,
+          "max_date": "2026-08-29",
+          "mean": 159.0,
+          "min": 134,
+          "by_date": {
+            "2026-08-03": 151,
+            "2026-08-04": 140,
+            "2026-08-05": 141,
+            "2026-08-06": 163,
+            "2026-08-07": 162,
+            "2026-08-08": 184,
+            "2026-08-09": 162,
+            "2026-08-10": 140,
+            "2026-08-11": 142,
+            "2026-08-12": 156,
+            "2026-08-13": 182,
+            "2026-08-14": 180,
+            "2026-08-15": 183,
+            "2026-08-16": 160,
+            "2026-08-17": 136,
+            "2026-08-18": 134,
+            "2026-08-19": 148,
+            "2026-08-20": 138,
+            "2026-08-21": 162,
+            "2026-08-22": 188,
+            "2026-08-23": 172,
+            "2026-08-24": 163,
+            "2026-08-25": 137,
+            "2026-08-26": 155,
+            "2026-08-27": 143,
+            "2026-08-28": 179,
+            "2026-08-29": 192,
+            "2026-08-30": 160
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4756,
+          "transaction_recall": 0.7411,
+          "true_positives": 2118,
+          "false_positives": 2335
+        }
+      }
+    },
+    {
+      "n": 33,
+      "turn": 9,
+      "name": "evaluate_policy_change",
+      "arguments": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.35,
+        "mobile_app_threshold": 0.1
+      },
+      "is_error": false,
+      "result": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.35,
+        "mobile_app_threshold": 0.1,
+        "daily_capacity": 200,
+        "overall_fraud_value_recall": 0.8601,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 266375.38,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9418
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 127735.43,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7282
+          }
+        },
+        "flagged_transactions": 4364,
+        "daily_flags": {
+          "max": 189,
+          "max_date": "2026-08-29",
+          "mean": 155.9,
+          "min": 132,
+          "by_date": {
+            "2026-08-03": 149,
+            "2026-08-04": 138,
+            "2026-08-05": 138,
+            "2026-08-06": 163,
+            "2026-08-07": 160,
+            "2026-08-08": 177,
+            "2026-08-09": 153,
+            "2026-08-10": 146,
+            "2026-08-11": 138,
+            "2026-08-12": 152,
+            "2026-08-13": 178,
+            "2026-08-14": 174,
+            "2026-08-15": 182,
+            "2026-08-16": 155,
+            "2026-08-17": 134,
+            "2026-08-18": 132,
+            "2026-08-19": 144,
+            "2026-08-20": 136,
+            "2026-08-21": 157,
+            "2026-08-22": 186,
+            "2026-08-23": 169,
+            "2026-08-24": 156,
+            "2026-08-25": 133,
+            "2026-08-26": 155,
+            "2026-08-27": 140,
+            "2026-08-28": 179,
+            "2026-08-29": 189,
+            "2026-08-30": 151
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4858,
+          "transaction_recall": 0.7418,
+          "true_positives": 2120,
+          "false_positives": 2244
+        }
+      }
+    },
+    {
+      "n": 34,
+      "turn": 9,
+      "name": "evaluate_policy_change",
+      "arguments": {
+        "mobile_app_threshold": 0.1,
+        "website_threshold": 0.4,
+        "change_type": "channel_thresholds"
+      },
+      "is_error": false,
+      "result": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.4,
+        "mobile_app_threshold": 0.1,
+        "daily_capacity": 200,
+        "overall_fraud_value_recall": 0.8536,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 263398.05,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9313
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 127735.43,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7282
+          }
+        },
+        "flagged_transactions": 4284,
+        "daily_flags": {
+          "max": 183,
+          "max_date": "2026-08-22",
+          "mean": 153.0,
+          "min": 130,
+          "by_date": {
+            "2026-08-03": 144,
+            "2026-08-04": 136,
+            "2026-08-05": 137,
+            "2026-08-06": 161,
+            "2026-08-07": 157,
+            "2026-08-08": 173,
+            "2026-08-09": 149,
+            "2026-08-10": 138,
+            "2026-08-11": 136,
+            "2026-08-12": 148,
+            "2026-08-13": 176,
+            "2026-08-14": 172,
+            "2026-08-15": 178,
+            "2026-08-16": 154,
+            "2026-08-17": 133,
+            "2026-08-18": 130,
+            "2026-08-19": 143,
+            "2026-08-20": 134,
+            "2026-08-21": 153,
+            "2026-08-22": 183,
+            "2026-08-23": 168,
+            "2026-08-24": 154,
+            "2026-08-25": 133,
+            "2026-08-26": 150,
+            "2026-08-27": 136,
+            "2026-08-28": 176,
+            "2026-08-29": 182,
+            "2026-08-30": 150
+          }
+        },
+        "diagnostics": {
+          "precision": 0.489,
+          "transaction_recall": 0.733,
+          "true_positives": 2095,
+          "false_positives": 2189
+        }
+      }
+    },
+    {
+      "n": 35,
+      "turn": 9,
+      "name": "evaluate_policy_change",
+      "arguments": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.4,
+        "mobile_app_threshold": 0.09
+      },
+      "is_error": false,
+      "result": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.4,
+        "mobile_app_threshold": 0.09,
+        "daily_capacity": 200,
+        "overall_fraud_value_recall": 0.8658,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 263398.05,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9313
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 133328.44,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7601
+          }
+        },
+        "flagged_transactions": 4603,
+        "daily_flags": {
+          "max": 201,
+          "max_date": "2026-08-29",
+          "mean": 164.4,
+          "min": 138,
+          "by_date": {
+            "2026-08-03": 152,
+            "2026-08-04": 148,
+            "2026-08-05": 145,
+            "2026-08-06": 165,
+            "2026-08-07": 172,
+            "2026-08-08": 193,
+            "2026-08-09": 167,
+            "2026-08-10": 146,
+            "2026-08-11": 146,
+            "2026-08-12": 158,
+            "2026-08-13": 189,
+            "2026-08-14": 187,
+            "2026-08-15": 186,
+            "2026-08-16": 172,
+            "2026-08-17": 141,
+            "2026-08-18": 141,
+            "2026-08-19": 153,
+            "2026-08-20": 140,
+            "2026-08-21": 170,
+            "2026-08-22": 198,
+            "2026-08-23": 178,
+            "2026-08-24": 165,
+            "2026-08-25": 138,
+            "2026-08-26": 159,
+            "2026-08-27": 147,
+            "2026-08-28": 182,
+            "2026-08-29": 201,
+            "2026-08-30": 164
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4638,
+          "transaction_recall": 0.747,
+          "true_positives": 2135,
+          "false_positives": 2468
+        }
+      }
+    },
+    {
+      "n": 36,
+      "turn": 10,
+      "name": "evaluate_policy_change",
+      "arguments": {
+        "mobile_app_threshold": 0.1,
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.3
+      },
+      "is_error": false,
+      "result": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.3,
+        "mobile_app_threshold": 0.1,
+        "daily_capacity": 200,
+        "overall_fraud_value_recall": 0.8621,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 267322.42,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9452
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 127735.43,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7282
+          }
+        },
+        "flagged_transactions": 4425,
+        "daily_flags": {
+          "max": 191,
+          "max_date": "2026-08-29",
+          "mean": 158.0,
+          "min": 133,
+          "by_date": {
+            "2026-08-03": 150,
+            "2026-08-04": 139,
+            "2026-08-05": 138,
+            "2026-08-06": 164,
+            "2026-08-07": 164,
+            "2026-08-08": 182,
+            "2026-08-09": 154,
+            "2026-08-10": 148,
+            "2026-08-11": 140,
+            "2026-08-12": 155,
+            "2026-08-13": 180,
+            "2026-08-14": 175,
+            "2026-08-15": 185,
+            "2026-08-16": 159,
+            "2026-08-17": 138,
+            "2026-08-18": 133,
+            "2026-08-19": 146,
+            "2026-08-20": 137,
+            "2026-08-21": 161,
+            "2026-08-22": 190,
+            "2026-08-23": 171,
+            "2026-08-24": 158,
+            "2026-08-25": 133,
+            "2026-08-26": 157,
+            "2026-08-27": 141,
+            "2026-08-28": 181,
+            "2026-08-29": 191,
+            "2026-08-30": 155
+          }
+        },
+        "diagnostics": {
+          "precision": 0.482,
+          "transaction_recall": 0.7463,
+          "true_positives": 2133,
+          "false_positives": 2292
+        }
+      }
+    },
+    {
+      "n": 37,
+      "turn": 10,
+      "name": "evaluate_policy_change",
+      "arguments": {
+        "mobile_app_threshold": 0.095,
+        "website_threshold": 0.45,
+        "change_type": "channel_thresholds"
+      },
+      "is_error": false,
+      "result": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.45,
+        "mobile_app_threshold": 0.095,
+        "daily_capacity": 200,
+        "overall_fraud_value_recall": 0.8566,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 261349.42,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9241
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 131175.11,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7478
+          }
+        },
+        "flagged_transactions": 4395,
+        "daily_flags": {
+          "max": 192,
+          "max_date": "2026-08-29",
+          "mean": 157.0,
+          "min": 130,
+          "by_date": {
+            "2026-08-03": 149,
+            "2026-08-04": 140,
+            "2026-08-05": 139,
+            "2026-08-06": 161,
+            "2026-08-07": 160,
+            "2026-08-08": 183,
+            "2026-08-09": 162,
+            "2026-08-10": 138,
+            "2026-08-11": 135,
+            "2026-08-12": 153,
+            "2026-08-13": 180,
+            "2026-08-14": 179,
+            "2026-08-15": 181,
+            "2026-08-16": 158,
+            "2026-08-17": 134,
+            "2026-08-18": 130,
+            "2026-08-19": 147,
+            "2026-08-20": 134,
+            "2026-08-21": 160,
+            "2026-08-22": 187,
+            "2026-08-23": 172,
+            "2026-08-24": 161,
+            "2026-08-25": 135,
+            "2026-08-26": 153,
+            "2026-08-27": 139,
+            "2026-08-28": 176,
+            "2026-08-29": 192,
+            "2026-08-30": 157
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4769,
+          "transaction_recall": 0.7334,
+          "true_positives": 2096,
+          "false_positives": 2299
+        }
+      }
+    },
+    {
+      "n": 38,
+      "turn": 10,
+      "name": "evaluate_policy_change",
+      "arguments": {
+        "change_type": "channel_thresholds",
+        "mobile_app_threshold": 0.09,
+        "website_threshold": 0.5
+      },
+      "is_error": false,
+      "result": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.5,
+        "mobile_app_threshold": 0.09,
+        "daily_capacity": 200,
+        "overall_fraud_value_recall": 0.8544,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 258184.18,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9129
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 133328.44,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7601
+          }
+        },
+        "flagged_transactions": 4483,
+        "daily_flags": {
+          "max": 195,
+          "max_date": "2026-08-22",
+          "mean": 160.1,
+          "min": 133,
+          "by_date": {
+            "2026-08-03": 149,
+            "2026-08-04": 145,
+            "2026-08-05": 143,
+            "2026-08-06": 163,
+            "2026-08-07": 168,
+            "2026-08-08": 188,
+            "2026-08-09": 165,
+            "2026-08-10": 143,
+            "2026-08-11": 137,
+            "2026-08-12": 152,
+            "2026-08-13": 185,
+            "2026-08-14": 184,
+            "2026-08-15": 181,
+            "2026-08-16": 170,
+            "2026-08-17": 139,
+            "2026-08-18": 135,
+            "2026-08-19": 146,
+            "2026-08-20": 135,
+            "2026-08-21": 167,
+            "2026-08-22": 195,
+            "2026-08-23": 175,
+            "2026-08-24": 160,
+            "2026-08-25": 133,
+            "2026-08-26": 152,
+            "2026-08-27": 140,
+            "2026-08-28": 178,
+            "2026-08-29": 195,
+            "2026-08-30": 160
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4649,
+          "transaction_recall": 0.7292,
+          "true_positives": 2084,
+          "false_positives": 2399
+        }
+      }
+    },
+    {
+      "n": 39,
+      "turn": 11,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.106
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.106,
+        "overall_fraud_value_recall": 0.8761,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 277825.3,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9823
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 123650.85,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7049
+          }
+        },
+        "flagged_transactions": 4777,
+        "daily_flags": {
+          "max": 209,
+          "max_date": "2026-08-29",
+          "mean": 170.6,
+          "min": 143,
+          "by_date": {
+            "2026-08-03": 159,
+            "2026-08-04": 157,
+            "2026-08-05": 144,
+            "2026-08-06": 164,
+            "2026-08-07": 182,
+            "2026-08-08": 202,
+            "2026-08-09": 151,
+            "2026-08-10": 167,
+            "2026-08-11": 155,
+            "2026-08-12": 166,
+            "2026-08-13": 202,
+            "2026-08-14": 196,
+            "2026-08-15": 193,
+            "2026-08-16": 170,
+            "2026-08-17": 152,
+            "2026-08-18": 143,
+            "2026-08-19": 159,
+            "2026-08-20": 153,
+            "2026-08-21": 171,
+            "2026-08-22": 198,
+            "2026-08-23": 187,
+            "2026-08-24": 168,
+            "2026-08-25": 145,
+            "2026-08-26": 165,
+            "2026-08-27": 154,
+            "2026-08-28": 193,
+            "2026-08-29": 209,
+            "2026-08-30": 172
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4647,
+          "transaction_recall": 0.7768,
+          "true_positives": 2220,
+          "false_positives": 2557
+        }
+      }
+    },
+    {
+      "n": 40,
+      "turn": 11,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.107
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.107,
+        "overall_fraud_value_recall": 0.8754,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 277825.3,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9823
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 123324.81,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7031
+          }
+        },
+        "flagged_transactions": 4750,
+        "daily_flags": {
+          "max": 207,
+          "max_date": "2026-08-29",
+          "mean": 169.6,
+          "min": 141,
+          "by_date": {
+            "2026-08-03": 158,
+            "2026-08-04": 156,
+            "2026-08-05": 143,
+            "2026-08-06": 164,
+            "2026-08-07": 180,
+            "2026-08-08": 201,
+            "2026-08-09": 151,
+            "2026-08-10": 164,
+            "2026-08-11": 155,
+            "2026-08-12": 166,
+            "2026-08-13": 202,
+            "2026-08-14": 196,
+            "2026-08-15": 192,
+            "2026-08-16": 170,
+            "2026-08-17": 151,
+            "2026-08-18": 141,
+            "2026-08-19": 158,
+            "2026-08-20": 153,
+            "2026-08-21": 169,
+            "2026-08-22": 198,
+            "2026-08-23": 185,
+            "2026-08-24": 167,
+            "2026-08-25": 143,
+            "2026-08-26": 164,
+            "2026-08-27": 153,
+            "2026-08-28": 192,
+            "2026-08-29": 207,
+            "2026-08-30": 171
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4667,
+          "transaction_recall": 0.7757,
+          "true_positives": 2217,
+          "false_positives": 2533
+        }
+      }
+    },
+    {
+      "n": 41,
+      "turn": 11,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.8
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.8,
+        "overall_fraud_value_recall": 0.5158,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 229728.8,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.8123
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 6643.36,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.0379
+          }
+        },
+        "flagged_transactions": 1293,
+        "daily_flags": {
+          "max": 56,
+          "max_date": "2026-08-14",
+          "mean": 46.2,
+          "min": 33,
+          "by_date": {
+            "2026-08-03": 51,
+            "2026-08-04": 45,
+            "2026-08-05": 49,
+            "2026-08-06": 46,
+            "2026-08-07": 46,
+            "2026-08-08": 55,
+            "2026-08-09": 47,
+            "2026-08-10": 41,
+            "2026-08-11": 38,
+            "2026-08-12": 44,
+            "2026-08-13": 55,
+            "2026-08-14": 56,
+            "2026-08-15": 56,
+            "2026-08-16": 46,
+            "2026-08-17": 37,
+            "2026-08-18": 33,
+            "2026-08-19": 41,
+            "2026-08-20": 34,
+            "2026-08-21": 46,
+            "2026-08-22": 44,
+            "2026-08-23": 53,
+            "2026-08-24": 52,
+            "2026-08-25": 46,
+            "2026-08-26": 41,
+            "2026-08-27": 40,
+            "2026-08-28": 50,
+            "2026-08-29": 55,
+            "2026-08-30": 46
+          }
+        },
+        "diagnostics": {
+          "precision": 0.9466,
+          "transaction_recall": 0.4283,
+          "true_positives": 1224,
+          "false_positives": 69
+        }
+      }
+    },
+    {
+      "n": 42,
+      "turn": 11,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.9
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.9,
+        "overall_fraud_value_recall": 0.4095,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 187184.3,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.6618
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 439.26,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.0025
+          }
+        },
+        "flagged_transactions": 969,
+        "daily_flags": {
+          "max": 47,
+          "max_date": "2026-08-13",
+          "mean": 34.6,
+          "min": 20,
+          "by_date": {
+            "2026-08-03": 31,
+            "2026-08-04": 35,
+            "2026-08-05": 38,
+            "2026-08-06": 38,
+            "2026-08-07": 38,
+            "2026-08-08": 42,
+            "2026-08-09": 34,
+            "2026-08-10": 28,
+            "2026-08-11": 26,
+            "2026-08-12": 33,
+            "2026-08-13": 47,
+            "2026-08-14": 43,
+            "2026-08-15": 43,
+            "2026-08-16": 31,
+            "2026-08-17": 28,
+            "2026-08-18": 22,
+            "2026-08-19": 32,
+            "2026-08-20": 20,
+            "2026-08-21": 34,
+            "2026-08-22": 37,
+            "2026-08-23": 43,
+            "2026-08-24": 40,
+            "2026-08-25": 32,
+            "2026-08-26": 28,
+            "2026-08-27": 33,
+            "2026-08-28": 39,
+            "2026-08-29": 37,
+            "2026-08-30": 37
+          }
+        },
+        "diagnostics": {
+          "precision": 0.9732,
+          "transaction_recall": 0.33,
+          "true_positives": 943,
+          "false_positives": 26
+        }
+      }
+    },
+    {
+      "n": 43,
+      "turn": 12,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.88
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.88,
+        "overall_fraud_value_recall": 0.4533,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 206460.25,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.73
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 1262.58,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.0072
+          }
+        },
+        "flagged_transactions": 1076,
+        "daily_flags": {
+          "max": 48,
+          "max_date": "2026-08-13",
+          "mean": 38.4,
+          "min": 26,
+          "by_date": {
+            "2026-08-03": 39,
+            "2026-08-04": 39,
+            "2026-08-05": 41,
+            "2026-08-06": 41,
+            "2026-08-07": 41,
+            "2026-08-08": 43,
+            "2026-08-09": 37,
+            "2026-08-10": 33,
+            "2026-08-11": 31,
+            "2026-08-12": 36,
+            "2026-08-13": 48,
+            "2026-08-14": 47,
+            "2026-08-15": 47,
+            "2026-08-16": 35,
+            "2026-08-17": 30,
+            "2026-08-18": 26,
+            "2026-08-19": 36,
+            "2026-08-20": 28,
+            "2026-08-21": 37,
+            "2026-08-22": 39,
+            "2026-08-23": 47,
+            "2026-08-24": 44,
+            "2026-08-25": 38,
+            "2026-08-26": 30,
+            "2026-08-27": 36,
+            "2026-08-28": 45,
+            "2026-08-29": 43,
+            "2026-08-30": 39
+          }
+        },
+        "diagnostics": {
+          "precision": 0.9665,
+          "transaction_recall": 0.3639,
+          "true_positives": 1040,
+          "false_positives": 36
+        }
+      }
+    },
+    {
+      "n": 44,
+      "turn": 12,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.89
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.89,
+        "overall_fraud_value_recall": 0.4349,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 198022.22,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.7002
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 1262.58,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.0072
+          }
+        },
+        "flagged_transactions": 1037,
+        "daily_flags": {
+          "max": 47,
+          "max_date": "2026-08-13",
+          "mean": 37.0,
+          "min": 23,
+          "by_date": {
+            "2026-08-03": 37,
+            "2026-08-04": 39,
+            "2026-08-05": 41,
+            "2026-08-06": 41,
+            "2026-08-07": 38,
+            "2026-08-08": 43,
+            "2026-08-09": 37,
+            "2026-08-10": 32,
+            "2026-08-11": 31,
+            "2026-08-12": 36,
+            "2026-08-13": 47,
+            "2026-08-14": 46,
+            "2026-08-15": 46,
+            "2026-08-16": 32,
+            "2026-08-17": 29,
+            "2026-08-18": 23,
+            "2026-08-19": 34,
+            "2026-08-20": 25,
+            "2026-08-21": 36,
+            "2026-08-22": 37,
+            "2026-08-23": 45,
+            "2026-08-24": 42,
+            "2026-08-25": 36,
+            "2026-08-26": 30,
+            "2026-08-27": 34,
+            "2026-08-28": 42,
+            "2026-08-29": 41,
+            "2026-08-30": 37
+          }
+        },
+        "diagnostics": {
+          "precision": 0.9682,
+          "transaction_recall": 0.3513,
+          "true_positives": 1004,
+          "false_positives": 33
+        }
+      }
+    },
+    {
+      "n": 45,
+      "turn": 12,
+      "name": "evaluate_policy_change",
+      "arguments": {
+        "website_threshold": 0.35,
+        "change_type": "channel_thresholds",
+        "mobile_app_threshold": 0.098
+      },
+      "is_error": false,
+      "result": {
+        "change_type": "channel_thresholds",
+        "website_threshold": 0.35,
+        "mobile_app_threshold": 0.098,
+        "daily_capacity": 200,
+        "overall_fraud_value_recall": 0.8629,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 266375.38,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.9418
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 129018.22,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.7355
+          }
+        },
+        "flagged_transactions": 4421,
+        "daily_flags": {
+          "max": 190,
+          "max_date": "2026-08-29",
+          "mean": 157.9,
+          "min": 134,
+          "by_date": {
+            "2026-08-03": 151,
+            "2026-08-04": 138,
+            "2026-08-05": 141,
+            "2026-08-06": 164,
+            "2026-08-07": 163,
+            "2026-08-08": 180,
+            "2026-08-09": 155,
+            "2026-08-10": 146,
+            "2026-08-11": 140,
+            "2026-08-12": 158,
+            "2026-08-13": 180,
+            "2026-08-14": 178,
+            "2026-08-15": 185,
+            "2026-08-16": 157,
+            "2026-08-17": 135,
+            "2026-08-18": 134,
+            "2026-08-19": 145,
+            "2026-08-20": 137,
+            "2026-08-21": 160,
+            "2026-08-22": 186,
+            "2026-08-23": 170,
+            "2026-08-24": 161,
+            "2026-08-25": 134,
+            "2026-08-26": 156,
+            "2026-08-27": 142,
+            "2026-08-28": 180,
+            "2026-08-29": 190,
+            "2026-08-30": 155
+          }
+        },
+        "diagnostics": {
+          "precision": 0.4818,
+          "transaction_recall": 0.7453,
+          "true_positives": 2130,
+          "false_positives": 2291
+        }
+      }
+    },
+    {
+      "n": 46,
+      "turn": 13,
+      "name": "evaluate_global_threshold",
+      "arguments": {
+        "threshold": 0.891
+      },
+      "is_error": false,
+      "result": {
+        "threshold": 0.891,
+        "overall_fraud_value_recall": 0.4322,
+        "by_channel": {
+          "website": {
+            "flagged_fraud_value_usd": 196785.8,
+            "labeled_fraud_value_usd": 282823.53,
+            "fraud_value_recall": 0.6958
+          },
+          "mobile_app": {
+            "flagged_fraud_value_usd": 1262.58,
+            "labeled_fraud_value_usd": 175404.53,
+            "fraud_value_recall": 0.0072
+          }
+        },
+        "flagged_transactions": 1031,
+        "daily_flags": {
+          "max": 47,
+          "max_date": "2026-08-13",
+          "mean": 36.8,
+          "min": 23,
+          "by_date": {
+            "2026-08-03": 36,
+            "2026-08-04": 39,
+            "2026-08-05": 41,
+            "2026-08-06": 40,
+            "2026-08-07": 38,
+            "2026-08-08": 43,
+            "2026-08-09": 36,
+            "2026-08-10": 32,
+            "2026-08-11": 30,
+            "2026-08-12": 36,
+            "2026-08-13": 47,
+            "2026-08-14": 46,
+            "2026-08-15": 46,
+            "2026-08-16": 32,
+            "2026-08-17": 29,
+            "2026-08-18": 23,
+            "2026-08-19": 34,
+            "2026-08-20": 24,
+            "2026-08-21": 35,
+            "2026-08-22": 37,
+            "2026-08-23": 45,
+            "2026-08-24": 42,
+            "2026-08-25": 36,
+            "2026-08-26": 30,
+            "2026-08-27": 34,
+            "2026-08-28": 42,
+            "2026-08-29": 41,
+            "2026-08-30": 37
+          }
+        },
+        "diagnostics": {
+          "precision": 0.968,
+          "transaction_recall": 0.3492,
+          "true_positives": 998,
+          "false_positives": 33
+        }
+      }
+    }
+  ],
+  "turns": [
+    {
+      "kind": "investigate",
+      "status": "requires_action",
+      "interaction_id": "v1_ChZRNlAwYXEyM0FaT09pTE1QbVp1ZldBEhZRNlAwYXEyM0FaT09pTE1QbVp1ZldB",
+      "seconds": 7.05,
+      "usage": {
+        "input": 661,
+        "cached": 0,
+        "output": 18,
+        "thought": 47,
+        "tool_use": 0
+      },
+      "thought_summaries": [
+        "Okay, let's break this down.\n\n**Initial Audit Planning**\n\nAlright, I need to methodically approach this. The instructions are clear \u2013 before I do *anything* else, I need to understand the scope and the current state. So, the first imperative is to grab the audit context. That means I need to call the `get_audit_context` function immediately. No jumping the gun, no assumptions, just a solid understanding of the landscape before I move forward with the evaluation. Makes perfect sense.\n\n\n"
+      ]
+    },
+    {
+      "kind": "investigate",
+      "status": "requires_action",
+      "interaction_id": "v1_ChZRNlAwYXEyM0FaT09pTE1QbVp1ZldBEhdTYVAwYXFfeEk3ZlRpTE1QelBQcHVRWQ",
+      "seconds": 9.82,
+      "usage": {
+        "input": 1498,
+        "cached": 0,
+        "output": 24,
+        "thought": 407,
+        "tool_use": 0
+      },
+      "thought_summaries": [
+        "**Analyzing the Audit Context for Compliance**\n\nOkay, let's dive into this audit context. My initial focus is on ensuring compliance with the stated policy requirements, starting with a deep dive into the current configuration.\n\nFirst, I need to thoroughly understand the current setup. The system flags transactions when the `risk_score` is greater than or equal to a threshold, which is currently set at 0.5. I'm noting that the `risk_score` is rounded to three decimal places, which is crucial. This means my effective threshold isn't a continuous variable but a discrete one on a 0.001 grid. This understanding will be critical when evaluating potential changes. Also, I must not forget that the `daily_review_capacity` is 200 transactions.\n\nThe key policy requirements are the following. R1 demands that the flagged transactions cover at least 85% of the total labeled fraud value across both channels. R2 splits this and requires at least 70% coverage within each channel individually (website and mobile). Finally, R3 is a hard cap \u2013 no more than 200 transactions can be flagged on any given day.\n\nNow, I'm examining permitted changes: a capacity increase to 260 transactions daily with a single global threshold (`capacity_increase`) or implementing separate thresholds for the Website and Mobile App with the original capacity of 200 (`channel_thresholds`). Importantly, these changes cannot be combined. The guidance indicates a preference for a compliant, no-capacity-increase option, or, if none exists, the smallest verified capacity increase.\n\nMy immediate step is to evaluate the current configuration (with the threshold of 0.5) using the function `evaluate_global_threshold`. I need to assess whether it meets all the requirements R1, R2, and R3. This is the baseline from which I will evaluate and compare other compliant strategies.\n\n\n"
+      ]
+    },
+    {
+      "kind": "investigate",
+      "status": "requires_action",
+      "interaction_id": "v1_ChZRNlAwYXEyM0FaT09pTE1QbVp1ZldBEhdVNlAwYW9fa0haRHgwX2dQMnE3ZHVBYw",
+      "seconds": 14.63,
+      "usage": {
+        "input": 2662,
+        "cached": 0,
+        "output": 84,
+        "thought": 502,
+        "tool_use": 0
+      },
+      "thought_summaries": [
+        "**Analyzing and Optimizing the Fraud Detection Threshold**\n\nOkay, let's dive into this fraud detection configuration and see what we can tweak. My initial assessment with the current threshold of 0.5 isn't looking great: Rule R1, the overall fraud-value recall, is only hitting 64.03% \u2013 a definite fail. R2 for the Website is doing great at 91.29%, but R2 for the Mobile App is abysmal at a mere 20.07%, a serious problem. Thankfully, R3, which limits daily flags, passes with a max of 85, well below the 200 threshold.\n\nNow, the real question is: Can we find a *global* threshold that satisfies the entire policy\u2014R1 >= 0.85, both R2 Website and R2 Mobile App >= 0.70, and R3 with a max daily flags <= 200? The key here is understanding the trade-off. As I lower the threshold, the fraud-value recall generally increases (or stays the same), but the daily flags will also increase (or stay the same). I'm thinking a binary search is the best approach to find the sweet spot, calling `evaluate_global_threshold` repeatedly to zero in on the optimal value.\n\nI need to pinpoint three crucial thresholds: the highest where R1 finally hits 0.85, the highest where R2 Mobile App reaches 0.70, and the lowest where R3, the daily flag limit, *still* holds. I'll need to use `evaluate_global_threshold` to explore the behavior. To get a feel for the landscape, let's start with a few test thresholds. Can I make these calls in parallel? If so, that would really speed things up. If not, I'll batch them in a small group. Let's start with 0.1, 0.2, 0.3, and 0.4. That should give me a good initial bracket and allow me to zoom in on the optimal configuration.\n\n\n"
+      ]
+    },
+    {
+      "kind": "investigate",
+      "status": "requires_action",
+      "interaction_id": "v1_ChZRNlAwYXEyM0FaT09pTE1QbVp1ZldBEhdZcVAwYXFHQ0U5VER4ZElQOHFUVjBRWQ",
+      "seconds": 11.75,
+      "usage": {
+        "input": 6243,
+        "cached": 2663,
+        "output": 109,
+        "thought": 382,
+        "tool_use": 0
+      },
+      "thought_summaries": [
+        "**Analyzing Threshold Sensitivity in Fraud Detection**\n\nAlright, let's dive into this. The key question here is how sensitive our fraud detection model is to the chosen threshold. I'm seeing a significant difference between `threshold = 0.1` and `threshold = 0.2`, so the interesting region for a single global threshold is clearly in that range!\n\nSpecifically, at a threshold of `0.1`, the system is performing well in overall recall (0.8855, passing the 0.85 target), website fraud recall (0.9830, passing the 0.70 target), and mobile app fraud recall (0.7282, passing the 0.70 target), however it trips up on the daily flags, with 214 being the maximum for a given day (with an average of 177.2), which is over the target of 200.\n\nHowever, moving to a `0.2` threshold, the results look different. The overall fraud recall drops below the acceptable threshold (0.8024), and the mobile app fraud recall also falls below the acceptable mark (0.5453). Meanwhile, the daily flags condition is satisfied (max of 143), which is great.\n\nSo, the optimal threshold must lie somewhere between those two values. To get a more precise handle on exactly where the key performance indicators (KPIs) change their status, I'm going to run a focused sweep of values between `0.100` and `0.200`. I'll test at `0.11`, `0.12`, `0.13`, `0.14`, and `0.15` to see exactly where R1, R2 Mobile App, and R3 cross the threshold, giving me a 0.001-grid pinpoint.\n\n\n"
+      ]
+    },
+    {
+      "kind": "investigate",
+      "status": "requires_action",
+      "interaction_id": "v1_ChZRNlAwYXEyM0FaT09pTE1QbVp1ZldBEhdicVAwYXVIQkRhekZ4ZElQenBtRW9BVQ",
+      "seconds": 16.17,
+      "usage": {
+        "input": 10569,
+        "cached": 6244,
+        "output": 114,
+        "thought": 694,
+        "tool_use": 0
+      },
+      "thought_summaries": [
+        "**Analyzing Thresholds and Constraint Violations**\n\nOkay, hold on a minute, let's zoom in on these threshold values: `0.10`, `0.11`, and `0.12`. The key thing here is the behavior of the metrics as the threshold changes. At `0.11`, we've got an issue: `mobile_app`'s `fraud_value_recall` is below 0.70 (violating R2 for Mobile App), AND `daily_flags` `max` is over 200 (violating R3). Jumping to `0.12`, things have improved for some constraints but not all: `overall_fraud_value_recall` now passes R1, and `website` recall is good for R2, but `mobile_app` *still* fails R2, and `daily_flags` is now within the limit for R3.\n\nWait a second, let's think about this a bit more. The interval from `0.10` to `0.12` is critical. If we consider `0.110`, we see that the monotonicity of recall and flags is key. `mobile_app` recall is at 0.6986 (less than 0.70) *and* daily flags are at 204 (greater than 200). Since both these metrics increase (or stay the same) with a decreasing threshold, then if the threshold is any greater than or equal to `0.110`, the recall will *not* reach 0.70. And if the threshold is any less than or equal to `0.110`, the flags will exceed 200! This means that with a global threshold, these two constraints are fundamentally incompatible, simultaneously!\n\nOkay, so the game plan is to find the *exact* breaking points for these rules. I'm going to run a grid search for these specific intervals. I'll pinpoint the exact threshold for `mobile_app` R2 (between `0.100` and `0.110`), for R3 (between `0.110` and `0.120`), and for R1 (between `0.130` and `0.140`). I'll check website's R2 as a matter of completeness too. I'll zero in on `0.105`, `0.107`, `0.108`, `0.109` to find Mobile App's threshold, then `0.112`, `0.115`, `0.117` for R3, and `0.135`, `0.137`, `0.138` for R1. Let's make that a batch run and get these thresholds down!\n\n\n"
+      ]
+    },
+    {
+      "kind": "investigate",
+      "status": "requires_action",
+      "interaction_id": "v1_ChZRNlAwYXEyM0FaT09pTE1QbVp1ZldBEhdmNlAwYXJpZkNhcUYxc2dQd09YcHNBRQ",
+      "seconds": 12.86,
+      "usage": {
+        "input": 15215,
+        "cached": 10570,
+        "output": 114,
+        "thought": 417,
+        "tool_use": 0
+      },
+      "thought_summaries": [
+        "**Analysis of Model Performance Across Thresholds**\n\nOkay, this is excellent! I'm seeing some very interesting shifts in performance as the threshold changes. Look at the subtle difference between `0.108` and `0.109`!\n\nAt the `0.108` threshold, things are pretty solid: my `overall_fraud_value_recall` is a fantastic `0.8745` \u2013 well above the minimum of 0.85, so we're passing R1. The `website` is killing it with `0.9823`, comfortably exceeding the 0.70 requirement for R2 (website). The `mobile_app` is also passing R2 at a solid `0.7008`. Just a hair above the required `0.70` (note: I double-checked the division \u2013 it's right on the edge at that threshold). However, there's a problem... the `daily_flags.max` is at `205`, occurring on `2026-08-29`. This means we're failing R3, which requires a maximum of 200 daily flags. Damn.\n\nNow, at `0.109` things get even more interesting and potentially problematic. The `mobile_app` recall dips to `0.6996`, narrowly *failing* R2 (mobile app)! That calculation holds. The `daily_flags.max` also remains at 205, so we're still failing R3.\n\nI need to nail down the exact boundary points for those rules. I should test the thresholds `0.117`, `0.118`, and `0.119` to find the exact threshold where R3 fails and then I'll examine the thresholds `0.137`, `0.138`, and `0.139` to discover the exact point where R1 passes. Time to see where those break points are!\n\n\n"
+      ]
+    },
+    {
+      "kind": "investigate",
+      "status": "requires_action",
+      "interaction_id": "v1_ChZRNlAwYXEyM0FaT09pTE1QbVp1ZldBEhdpNlAwYXNySUtyamJ5dE1QeVB2cnFRaw",
+      "seconds": 49.73,
+      "usage": {
+        "input": 19589,
+        "cached": 15216,
+        "output": 176,
+        "thought": 1840,
+        "tool_use": 0
+      },
+      "thought_summaries": [
+        "**Policy Analysis: Threshold Optimization**\n\nOkay, here's the deal. Our global threshold map is looking solid. Let's break down the requirements as functions of that threshold, *T*.\n\n*   **R1 (Overall Fraud Recall >= 0.85):** Met for `T <= 0.137`. Easy enough.\n*   **R2 (Website Fraud Recall >= 0.70):**  That's a slam dunk. Even at `T = 0.500`, we're at 91.29%. We'll come back to this when we investigate channel-specific thresholds.\n*   **R2 (Mobile App Fraud Recall >= 0.70):**  Met for `T <= 0.108`. Got it.\n*   **R3 (Max Daily Flags <= 200):** Met for `T >= 0.118`.\n\n**Here's the rub:**  R2 for Mobile App (`T <= 0.108`) directly conflicts with R3 (`T >= 0.118`) under a single global threshold! At `T = 0.108`, we hit R2 for Mobile App but exceed the daily flag limit. At `T = 0.118`, we meet R3, but Mobile App fraud recall falls short. Because of the rounding and monotonic behavior of recall and flags, we know that no single global threshold will work.\n\nSo, let's look at the policy's permitted changes, keeping that \"preference rule\" in mind:\n\nThe preference rule, *that's* the key. A complaint option without needing a higher review capacity is what we should aim for.\n\n**Option 1: Channel-Specific Thresholds**\n\nCould using different thresholds for the Website and Mobile App solve this? Let's consider `mobile_app_threshold = 0.108` to satisfy R2 for Mobile App. Now, what does the website need to do to meet R1 (Overall Recall)?\n\nTotal labeled fraud value is $458,228.06. Mobile App flagged $122,916.85 at threshold `0.108`. We'd need the Website to flag at least $266,577.00.\n\nEarlier results for Website fraud detection are very encouraging. Specifically, `website_threshold = 0.3` flags $267,322.42 and satisfies R1 with Max daily flags = `110`. We need to test to verify it meets all requirements.\n\nLet's use the tool and see if something like `website_threshold = 0.3` and `mobile_app_threshold = 0.108` holds everything! We need to verify with the `evaluate_policy_change` function.\n\n**Option 2: Capacity Increase**\n\nLet's also check a capacity increase scenario. Starting at the threshold that gets us the best result for Mobile App (`T = 0.108`), but with a daily capacity of 205 (the max for that threshold). Let's see if we can do better at a slightly lower or higher threshold using the tool.\n\nLet's call `evaluate_policy_change` on both options and see which is the winner.\n\n"
+      ]
+    },
+    {
+      "kind": "investigate",
+      "status": "requires_action",
+      "interaction_id": "v1_ChZRNlAwYXEyM0FaT09pTE1QbVp1ZldBEhd2YVAwYXNXakc0Q2Z1TVlQa19Ub3lRUQ",
+      "seconds": 26.58,
+      "usage": {
+        "input": 24801,
+        "cached": 19590,
+        "output": 223,
+        "thought": 907,
+        "tool_use": 0
+      },
+      "thought_summaries": [
+        "**Analyzing Policy Compliance and Optimizing Threshold Configuration**\n\nOkay, so both potential changes work! Now, the preference rule is key here. Let's make sure we have this straight: \"a compliant option that needs no extra review capacity is preferred. If none exists, the smallest verified capacity increase within the permitted range is preferred.\"\n\nWait a minute, look at this! Using **separate thresholds for the Website and Mobile App (`channel_thresholds`) with the original daily capacity of 200** is COMPLIANT and, critically, **needs NO extra review capacity**! So, according to the preference rule, this **`channel_thresholds` option is clearly superior to the `capacity_increase` option.**\n\nYes, I'll admit `capacity_increase` also works (e.g., a global threshold of `0.108` with `daily_capacity = 205` is the smallest verified increase), but `channel_thresholds` is preferred because it's compliant without needing any additional review capacity!\n\nNow, let's carefully map out the feasible space of `channel_thresholds` to find a robust configuration, one that is well-buffered (not razor-thin) on the validation window, bearing in mind a sealed holdout window exists.\nWait: let's think carefully!\nWhy does a sealed holdout window matter?\nLook at `\"holdout\": \"A later holdout window exists. It is sealed, and no tool can read it.\"`\nAND look at the instructions:\n\"- If you recommend a change, follow the policy's preference rule and test the exact configuration you recommend.\n- If the evidence does not settle a question, say so. Inconclusive is an acceptable answer.\"\n\nHang on! Let's consider both of these points! Which specific `(website_threshold, mobile_app_threshold)` pair within `channel_thresholds` will be best?\n\nConsider the following `mobile_app_threshold = 0.108, website_threshold = 0.30` scenario:\n- At `(0.30, 0.108)`, `overall_fraud_value_recall = 0.8516` (just above 0.85!), `mobile_app` `fraud_value_recall = 0.7008` (just above 0.70!), and `daily_flags.max = 185` (15 below 200!).\nThe key point is that we have **15 flags/day headroom** below the daily limit of 200. Can we trade some of that unused headroom to get MUCH better margin on R1 (`>= 0.85`) and R2 Mobile App (`>= 0.70`) while ALSO keeping comfortable headroom below R3 (`<= 200`) so the solution isn't perched on a knife-edge at `70.08%` / `85.16%`?\n\nLet's test what different `(website_threshold, mobile_app_threshold)` values can achieve! Let's examine different combinations, for instance:\n- `(website_threshold = 0.20, mobile_app_threshold = 0.10)`\n- `(website_threshold = 0.25, mobile_app_threshold = 0.095)`\n- `(website_threshold = 0.20, mobile_app_threshold = 0.095)`\n- `(website_threshold = 0.22, mobile_app_threshold = 0.10)`\n\nI'm going to run a batch of `evaluate_policy_change` calls to thoroughly explore the feasible region for `channel_thresholds`!\n\n\n"
+      ]
+    },
+    {
+      "kind": "investigate",
+      "status": "requires_action",
+      "interaction_id": "v1_ChZRNlAwYXEyM0FaT09pTE1QbVp1ZldBEhcyS1AwYXFTWEdJckcwX2dQMDRqOG9BZw",
+      "seconds": 13.2,
+      "usage": {
+        "input": 29944,
+        "cached": 24802,
+        "output": 221,
+        "thought": 390,
+        "tool_use": 0
+      },
+      "thought_summaries": [
+        "**A New Hypothesis: Balancing Website and Mobile App Thresholds**\n\nOkay, hold on a minute! I'm seeing something here. It's almost... too obvious. What if we aggressively adjust the balance between the `website_threshold` and `mobile_app_threshold`? Instead of incremental changes, let's really push it. I'm thinking, significantly *raising* the `website_threshold` \u2013 maybe even up to 0.35 or 0.40 \u2013 while simultaneously *lowering* the `mobile_app_threshold` to something like 0.095 or 0.10.\n\nThinking about the performance at `website_threshold = 0.40` from that Call 6 example - the results are compelling. We see `flagged_fraud_value_usd = 263,398.05`, with a `fraud_value_recall = 0.9313`. And, combined with a `mobile_app_threshold = 0.095`, which gives us `flagged_fraud_value_usd = 131,175.11` and `fraud_value_recall = 0.7478`... the *total* flagged fraud value is now `394,573.16`. That's an astonishing `86.11%` of the total! It's clear that upping the website threshold really cuts down on website flags without drastically impacting the result.\n\nSo, the hypothesis is: by carefully tuning these thresholds, we might be able to find a sweet spot that achieves high recall *and* efficiently reduces the number of website flags. This is really exciting, because it has the potential to produce a considerable performance increase!\n\nLet's test this in a targeted, focused manner. I'm going to run five calls with these specific threshold combinations: `(website_threshold = 0.35, mobile_app_threshold = 0.095)`, `(0.40, 0.095)`, `(0.35, 0.10)`, `(0.40, 0.10)`, and `(0.45, 0.09)`. This will give us a clear picture of the trade-offs at play. These calls are going to be immensely informative, revealing how well this strategic pivot works. Let's get to work!\n\n\n"
+      ]
+    },
+    {
+      "kind": "investigate",
+      "status": "requires_action",
+      "interaction_id": "v1_ChZRNlAwYXEyM0FaT09pTE1QbVp1ZldBEhc1YVAwYXZyZ0lkSFgwX2dQMjkyY21BYw",
+      "seconds": 9.23,
+      "usage": {
+        "input": 34564,
+        "cached": 29945,
+        "output": 134,
+        "thought": 168,
+        "tool_use": 0
+      },
+      "thought_summaries": [
+        "**Analyzing Channel Thresholds**\n\nOkay, let's dive into these `channel_thresholds` configurations we've just measured. I need to get a good feel for how these thresholds affect performance. The initial point I'm considering is `website_threshold = 0.30` and `mobile_app_threshold = 0.10`. But, I'm not going to jump to conclusions just yet. I need a more comprehensive understanding.\n\nI should check the impact of `(0.30, 0.10)` against configurations like `(0.30, 0.098)` and `(0.35, 0.098)`. These minor adjustments can sometimes reveal critical sensitivities. To further broaden my understanding, I'll also run simulations on the configuration `(0.30, 0.10)` in comparison to `(0.45, 0.095)` and `(0.50, 0.09)`. This will help me understand the upper limits for the `website_threshold`, keeping the `mobile_app_threshold` relatively stable. To ensure an efficient review, I'll make three calls to the system, so I can ensure thorough coverage.\n\n\n"
+      ]
+    },
+    {
+      "kind": "investigate",
+      "status": "requires_action",
+      "interaction_id": "v1_ChZRNlAwYXEyM0FaT09pTE1QbVp1ZldBEhc3cVAwYXJhUE80S0V5dE1QdHFESnlBRQ",
+      "seconds": 21.78,
+      "usage": {
+        "input": 37272,
+        "cached": 34565,
+        "output": 88,
+        "thought": 1434,
+        "tool_use": 0
+      },
+      "thought_summaries": [
+        "**Analyzing Channel Thresholds and Refining Global Thresholds**\n\nOkay, hold on a second! I need to compare these different `channel_thresholds` configurations side-by-side to make a decision. Let's see...\n\nFirst, let's look at a few examples:\n\n*   For `website_threshold = 0.35, mobile_app_threshold = 0.10` (Call 33), we see a solid `overall_fraud_value_recall` of 86.01%, exceeding the 85% requirement. The website recall is also very strong at 94.18%. The mobile app recall is a bit lower, but still meets the 70% target. Importantly, the maximum daily flags at 189, giving us an 11-flag buffer under our 200 limit (R3).\n\n*   Now consider `website_threshold = 0.30, mobile_app_threshold = 0.10` (Call 36). The overall recall is similar, and website recall is also good. Again, the mobile app is fine. The maximum daily flags are 191, with a 9-flag buffer.\n\n*   Then, with `website_threshold = 0.40, mobile_app_threshold = 0.095` (Call 32), we see higher mobile app recall. The daily flag buffer is smaller at 8 flags.\n\n*   Finally, at `website_threshold = 0.25, mobile_app_threshold = 0.10` (Call 24), we see the highest recall, but with the smallest daily flag buffer at 5.\n\nThis is good. But let's verify all our requirements are satisfied, including the website channel. To do so, let's consider the initial global thresholds as reference.\n\nWe already know that the R1 (overall) requirement is met for `T <= 0.137`, R2 Mobile App for `T <= 0.108`, and R3 for `T >= 0.118` with the original global threshold.\n\nI want to see *exactly* where the Website R2 (`>= 0.70`) requirement is met under a *global* threshold. I know that at `T = 0.500`, the website recall was `0.9129`, so let's check quickly at `0.7`, `0.8`, `0.9` to fully define the full feasibility interval of every requirement, using a global threshold.\n\nLet's also see what happens when the capacity is tweaked in the system. Let's test `capacity_increase` at `daily_capacity = 204` with `threshold = 0.108`. And before doing that, let's check if there is a situation where the flag capacity is exceeded, because we know from earlier calls that at `threshold = 0.108`, `daily_flags.max = 205`. Therefore, we know that a daily capacity of 205 is the minimum daily capacity that satisfies R3 for `threshold = 0.108`! We can also make the deduction that for any `threshold <= 0.108`, `max >= 205`!\n\nLet's also test where `max` daily flags is `205` but is at a threshold of `< 0.108` (with *even better* recall!). I know from Call 12 and Call 13 that at `threshold = 0.105`, `max = 210` and at `T = 0.108`: `max = 205`, respectively. Let's test at `T = 0.107` and `T = 0.106` too! Let's do it and let's run `evaluate_global_threshold` for `0.107`, `0.106`, `0.8`, `0.9`. That should provide a complete analysis!\n\n\n"
+      ]
+    },
+    {
+      "kind": "investigate",
+      "status": "requires_action",
+      "interaction_id": "v1_ChZRNlAwYXEyM0FaT09pTE1QbVp1ZldBEhdCS1QwYXNuYU51YW54ZElQajd2QTBBWQ",
+      "seconds": 12.24,
+      "usage": {
+        "input": 41787,
+        "cached": 37273,
+        "output": 91,
+        "thought": 180,
+        "tool_use": 0
+      },
+      "thought_summaries": [
+        "**Refining the Website R2 Boundary and Channel Thresholds**\n\nOkay, so we've got a decent grasp on things, but let's be absolutely sure about nailing down that Website R2 boundary. I want to check `0.85`, `0.88`, and `0.89` just to be certain we have a precise value, even if we don't end up using it directly. Actually, hold on \u2013 do we *really* need to go that far? Perhaps `0.88` and `0.89` would be sufficient for now. That's only two extra calls to be totally thorough.\n\nBeyond the R2, I'm starting to think about whether we have the optimal `channel_thresholds` configuration. I have a hunch there might be a better balance out there. We should test a few alternate values, for instance, what about `website_threshold = 0.35, mobile_app_threshold = 0.098` or `website_threshold = 0.38, mobile_app_threshold = 0.098`? So, let's include `0.88`, `0.89`, and the new channel thresholds. That gives us a comprehensive set of test cases.\n\n\n"
+      ]
+    },
+    {
+      "kind": "investigate",
+      "status": "requires_action",
+      "interaction_id": "v1_ChZRNlAwYXEyM0FaT09pTE1QbVp1ZldBEhdFYVQwYXRhRkZPdmR5dE1QOWFyZzBBNA",
+      "seconds": 9.66,
+      "usage": {
+        "input": 44326,
+        "cached": 41788,
+        "output": 26,
+        "thought": 58,
+        "tool_use": 0
+      },
+      "thought_summaries": [
+        "Okay, here's my interpretation of those thoughts, tailored for an expert audience:\n\n**Quick Sanity Check on Website R2 Cutoff**\n\nAlright, before we move on, I want to make a quick verification on the cutoff point for Website R2. I recall we identified a threshold around `0.7002` at a value of `0.890`, but it's important to make sure we're exactly on the 0.001 grid boundary of `0.891`. It's worth that quick check before we go any further down this path. I need to make sure we're not missing some important nuance, so just one quick look and then we can continue.\n\n\n"
+      ]
+    },
+    {
+      "kind": "investigate",
+      "status": "completed",
+      "interaction_id": "v1_ChZRNlAwYXEyM0FaT09pTE1QbVp1ZldBEhdHNlQwYXB2NkI2V0Yxc2dQcU9mMWdBMA",
+      "seconds": 77.05,
+      "usage": {
+        "input": 45141,
+        "cached": 42277,
+        "output": 1854,
+        "thought": 5327,
+        "tool_use": 0
+      },
+      "thought_summaries": [
+        "**Audit Summary**\n\nBased on the provided audit context and policy requirements, here's a summary of my analysis:\n\n*   **Current Configuration:** The initial configuration (`threshold = 0.5`, daily capacity = `200`) fails to meet requirements. Specifically:\n    *   R1 (overall fraud-value recall >= 85%) fails (`0.6403` or 64.03%).\n    *   R2 Website (fraud-value recall >= 70%) passes (`0.9129` or 91.29%).\n    *   R2 Mobile App (fraud-value recall >= 70%) fails (`0.2007` or 20.07%).\n    *   R3 (max daily flags <= 200) passes (`85` flags on `2026-08-13`).\n\n*   **Global Threshold Analysis:** No single global threshold satisfies all requirements due to conflicts between R2 Mobile App and R3:\n    *   R1 is satisfied if `threshold <= 0.137` (`0.8513` at `0.137`).\n    *   R2 Website is satisfied if `threshold <= 0.890` (`0.7002` at `0.890`).\n    *   R2 Mobile App is satisfied if `threshold <= 0.108` (`0.7008` at `0.108`).\n    *   R3 is satisfied if `threshold >= 0.118` (`max = 200` on `2026-08-29`).\n    *   The direct conflict is that R2 Mobile App requires `threshold <= 0.108` while R3 requires `threshold >= 0.118`.\n\n*   **Permitted Policy Changes:** Two permitted changes were evaluated, and each resolves the conflicts:\n    *   **Option A (Preferred): Separate Channel Thresholds:**\n        *   Recommended configuration: `website_threshold = 0.35`, `mobile_app_threshold = 0.10`.\n        *   Validation Window Results:\n            *   R1: `0.8601` (PASS)\n            *   R2 Website: `0.9418` (PASS)\n            *   R2 Mobile App: `0.7282` (PASS)\n            *   R3: `max = 189` on `2026-08-29` (PASS)\n        *   Alternative configuration: `website_threshold = 0.40, mobile_app_threshold = 0.095`\n            *   R1 `0.8611`, R2 Website `0.9313`, R2 Mobile App `0.7478`, R3 `max = 192` on `2026-08-29`.\n        *   Requires explicit human approval.\n    *   **Option B (Not Preferred): Capacity Increase:**\n        *   Smallest verified capacity increase: `daily_capacity = 205` with global `threshold = 0.108`.\n        *   Validation Window Results:\n            *   R1: `0.8745` (PASS)\n            *   R2 Website: `0.9823` (PASS)\n            *   R2 Mobile App: `0.7008` (PASS)\n            *   R3: `max = 205` on `2026-08-29` (PASS)\n        *   Not recommended as the policy prefers a solution that does not require additional review capacity.\n        *   Requires explicit human approval.\n\n*   **Inconclusive Aspects:**\n    *   **Holdout Window:** Performance on the sealed holdout window is unknown and must be verified separately after any policy change is approved.\n    *   **Financial Impact:** These metrics do not quantify actual fraud prevented or money recovered, so those aspects remain inconclusive.\n    *   **Approval Authority:** This audit provides recommendations only and cannot approve policy changes.\n\n\n"
+      ]
+    },
+    {
+      "kind": "report",
+      "status": "completed",
+      "interaction_id": "v1_ChZRNlAwYXEyM0FaT09pTE1QbVp1ZldBEhdhS1QwYW8tM0RJTHcwX2dQM01LMDJBYw",
+      "seconds": 106.53,
+      "usage": {
+        "input": 52995,
+        "cached": 0,
+        "output": 2271,
+        "thought": 7079,
+        "tool_use": 0
+      },
+      "thought_summaries": [
+        "**JSON Schema Adherence and Policy Analysis**\n\nOkay, here's the breakdown. We need to be absolutely meticulous with this JSON output, ensuring it's not just valid, but *perfectly* compliant with the schema and the instructions. The primary focus is on producing a single-line, compact JSON string without any newlines or tabs.  Let's verify every single item.\n\nFirst, the system instructions.  We're generating only parseable JSON, no comments, no control tokens, and no extra text. We have to stick exactly to the schema. We're rejecting the current configuration because no single global threshold hits our targets.\n\nNow for each property:\n\n1.  `status`:  This has to be `\"not deployable\"` because, based on the grid we have, no single global threshold will work.\n2.  `current_configuration_passes`:  It's `false`, given that at the threshold we're looking at (0.5), R1 and R2 are failing.\n3.  `requirements_failed_by_current_configuration`:  The current configuration (0.5) fails R1 and R2\\_mobile\\_app, which is `[\"R1\", \"R2_mobile_app\"]`.\n4.  `single_threshold_feasible`:  Absolutely `false` due to the conflicts between the requirements and the threshold ranges.\n5.  `conflicting_requirements`:  After careful review, the *only* minimal conflict is between R2\\_mobile\\_app and R3, which means our array should be `[\"R2_mobile_app\", \"R3\"]`.\n6.  `evidence`:  Every single number in the report must be justified by its source.  We have to cite the tool calls.  Let's review:\n    *   Call 1 (`get_audit_context`): Sets the policy context and the test parameters.\n    *   Call 2 (`evaluate_global_threshold`, threshold = 0.5): The first threshold is failing.\n    *   Call 13: This threshold gives us 0.7008, 0.8745, etc.\n    *   Call 14: Similar but different threshold.\n    *   Call 17: Still failing.\n    *   Call 18: Lowest threshold to hit R3 (max daily flags).\n    *   Call 20: Highest global threshold.\n    *   Call 21: At this number, R1 fails.\n    *   Call 44 and 46: Thresholds impacting R2\\_website.\n    *   Call 25 (`evaluate_policy_change`, change\\_type = capacity\\_increase): Capacity increase.\n    *   Call 33 (`evaluate_policy_change`, change\\_type = channel\\_thresholds): Best recommended thresholds.\n    *   Call 32: Additional compliant threshold.\n    Every single number must be cited and from a tool response.\n7.  Recommended Fields:  The `recommended_change_type` is `\"channel_thresholds\"`.  We need to look very closely at how the `evaluate_policy_change` tool functions. `recommended_global_threshold` and `recommended_daily_capacity` are *not* applicable under a `channel_thresholds` recommendation and thus are `null`.  The schema dictates this; we are *not* recommending a change to the review capacity. We are setting website and mobile thresholds, and we have to be sure it's null in both, and the only items we change are `recommended_website_threshold` and `recommended_mobile_app_threshold`.\n8.  `required_approvals`:  We need explicit human approval to enable these channel thresholds. The approval string needs to reflect the change being recommended.\n9.  `unresolved_issues`:  Two unresolved items: the holdout data is inaccessible, and the data only measures flagged fraud, not prevented fraud.\n10. Number Verification: *Every* number in the JSON *must* come from a tool response. We've listed and double-checked every single value, so everything is sourced exactly to a call. We have to be 100% sure the JSON structure is valid according to the required fields. So let's make sure that's all validated and we're ready. Then we can emit the JSON.\n\n\n"
+      ]
+    }
+  ],
+  "report": {
+    "status": "not deployable",
+    "current_configuration_passes": false,
+    "requirements_failed_by_current_configuration": [
+      "R1",
+      "R2_mobile_app"
+    ],
+    "single_threshold_feasible": false,
+    "conflicting_requirements": [
+      "R2_mobile_app",
+      "R3"
+    ],
+    "evidence": [
+      {
+        "tool_call": 1,
+        "finding": "Policy requires R1 >= 85% overall fraud-value recall, R2 >= 70% fraud-value recall within Website and Mobile App separately, and R3 <= 200 flagged transactions on any single UTC calendar day under one global threshold (currently 0.5 with daily_review_capacity 200); risk_score is rounded to 0.001 over the 28-day validation window (2026-08-03 to 2026-08-30, 133,285 transactions); permitted non-combinable changes are capacity_increase up to 260/day or channel_thresholds at original capacity 200/day, preferring a compliant option needing no extra review capacity; a later holdout window is sealed."
+      },
+      {
+        "tool_call": 2,
+        "finding": "At the current configuration (global threshold = 0.5), overall_fraud_value_recall = 0.6403 (fails R1 >= 85%) and Mobile App fraud_value_recall = 0.2007 (fails R2 >= 70%), while Website fraud_value_recall = 0.9129 (passes R2) and single-day max daily_flags = 85 on 2026-08-13 with mean = 66.9 and 1,874 flagged_transactions (passes R3 <= 200)."
+      },
+      {
+        "tool_call": 13,
+        "finding": "At global threshold = 0.108, R1 passes (0.8745), R2_website passes (0.9823), and R2_mobile_app passes (0.7008), but R3 fails because single-day max daily_flags = 205 on 2026-08-29 (even though daily mean = 168.5)."
+      },
+      {
+        "tool_call": 14,
+        "finding": "At global threshold = 0.109 (one 0.001 grid step higher), Mobile App fraud_value_recall drops to 0.6996 (fails R2 >= 70%), while single-day max daily_flags remains 205 on 2026-08-29 (fails R3 <= 200), proving R2_mobile_app requires threshold <= 0.108."
+      },
+      {
+        "tool_call": 17,
+        "finding": "At global threshold = 0.117, single-day max daily_flags = 201 on 2026-08-29 (fails R3 <= 200) and Mobile App fraud_value_recall = 0.6844 (fails R2 >= 70%), while R1 (0.8677) and R2_website (0.9814) pass."
+      },
+      {
+        "tool_call": 18,
+        "finding": "At global threshold = 0.118, single-day max daily_flags = 200 on 2026-08-29 with mean = 160.2 (passes R3 <= 200), R1 = 0.8671 (passes), and R2_website = 0.9814 (passes), but Mobile App fraud_value_recall = 0.6829 (fails R2 >= 70%), proving R3 requires threshold >= 0.118 and directly conflicts with R2_mobile_app (threshold <= 0.108)."
+      },
+      {
+        "tool_call": 20,
+        "finding": "At global threshold = 0.137, overall_fraud_value_recall = 0.8513 (highest threshold meeting R1 >= 85%), with R2_website = 0.9747, R2_mobile_app = 0.6524, and max daily_flags = 184 on 2026-08-29."
+      },
+      {
+        "tool_call": 21,
+        "finding": "At global threshold = 0.138, overall_fraud_value_recall = 0.8489 (fails R1 >= 85%), establishing that R1, R2_website, and R3 are jointly feasible for thresholds 0.118 through 0.137."
+      },
+      {
+        "tool_call": 44,
+        "finding": "At global threshold = 0.89, Website fraud_value_recall = 0.7002 (highest threshold meeting R2_website >= 70%)."
+      },
+      {
+        "tool_call": 46,
+        "finding": "At global threshold = 0.891, Website fraud_value_recall = 0.6958 (fails R2_website >= 70%)."
+      },
+      {
+        "tool_call": 25,
+        "finding": "Under permitted change capacity_increase with global threshold = 0.108 and daily_capacity = 205, all validation-window requirements pass (R1 = 0.8745, R2_website = 0.9823, R2_mobile_app = 0.7008, R3 max daily_flags = 205 on 2026-08-29); this is the smallest verified capacity increase that works, because threshold >= 0.109 fails R2_mobile_app and threshold <= 0.108 has max daily_flags >= 205."
+      },
+      {
+        "tool_call": 33,
+        "finding": "Under permitted change channel_thresholds with website_threshold = 0.35, mobile_app_threshold = 0.1, and original daily_capacity = 200, all requirements pass with buffer: R1 overall_fraud_value_recall = 0.8601, R2_website = 0.9418, R2_mobile_app = 0.7282, and R3 max daily_flags = 189 on 2026-08-29 (mean = 155.9, min = 132, 4,364 flagged_transactions; diagnostics: precision = 0.4858, transaction_recall = 0.7418, 2,120 true_positives, 2,244 false_positives)."
+      },
+      {
+        "tool_call": 32,
+        "finding": "An alternative tested channel_thresholds configuration (website_threshold = 0.4, mobile_app_threshold = 0.095, daily_capacity = 200) also passes all requirements on the validation window (R1 = 0.8611, R2_website = 0.9313, R2_mobile_app = 0.7478, R3 max daily_flags = 192 on 2026-08-29)."
+      }
+    ],
+    "recommended_change_type": "channel_thresholds",
+    "recommended_global_threshold": null,
+    "recommended_daily_capacity": null,
+    "recommended_website_threshold": 0.35,
+    "recommended_mobile_app_threshold": 0.1,
+    "required_approvals": [
+      "Explicit human approval is required per the PayGuard deployment policy (call 1) before adopting separate decision thresholds for Website (0.35) and Mobile App (0.1) at the original daily review capacity of 200 transactions per day."
+    ],
+    "unresolved_issues": [
+      "A later holdout window exists and is sealed (call 1), so whether the recommended channel thresholds (Website 0.35, Mobile App 0.1) will remain compliant\u2014particularly with R3's single-day limit of 200 flags\u2014on holdout or live traffic cannot be verified from validation-window data alone.",
+      "Flagging a transaction for manual review does not mean the fraud was stopped or the money recovered (call 1), so actual prevented financial loss is unresolved by fraud-value recall metrics."
+    ],
+    "summary": "PayGuard's fraud classifier is not deployable under the original single-threshold policy (daily capacity 200). The current threshold of 0.5 fails R1 (overall_fraud_value_recall = 0.6403 vs. 85%) and R2 for Mobile App (0.2007 vs. 70%), while passing R2 for Website (0.9129) and R3 (single-day max = 85 flags; call 2). Across the full 0.001 risk_score grid, R2 for Mobile App requires threshold <= 0.108 (0.7008 at 0.108 vs. 0.6996 at 0.109; calls 13-14), whereas R3's single-day cap of 200 requires threshold >= 0.118 (max = 200 at 0.118 vs. max = 201 at 0.117; calls 17-18), creating an irreconcilable conflict between R2_mobile_app and R3 under one global threshold. Both permitted policy changes work on the validation window: increasing capacity to daily_capacity = 205 at global threshold = 0.108 (call 25) or setting separate channel thresholds at the original 200/day capacity. Following the policy preference for a compliant option requiring no extra review capacity (call 1), we recommend channel_thresholds with website_threshold = 0.35 and mobile_app_threshold = 0.1 (call 33: R1 = 0.8601, R2_website = 0.9418, R2_mobile_app = 0.7282, R3 max = 189 on 2026-08-29), subject to explicit human approval and acknowledging that performance on the sealed holdout window remains unresolved."
+  },
+  "investigation_summary": "AUDIT DECISION SUMMARY\n\n1. Deployment Under the Original Policy: NO\nPayGuard's fraud classifier cannot be deployed under the fixed original policy (one global threshold, daily review capacity of 200) on the 28-day validation window (2026-08-03 to 2026-08-30), either at its current threshold or at any other global threshold.\n\n- Current configuration (global threshold = 0.5, daily capacity = 200):\n  - R1 (overall fraud-value recall >= 0.85): 0.6403 (FAIL)\n  - R2 Website (channel fraud-value recall >= 0.70): 0.9129 ($258,184.18 / $282,823.53) (PASS)\n  - R2 Mobile App (channel fraud-value recall >= 0.70): 0.2007 ($35,199.28 / $175,404.53) (FAIL)\n  - R3 (busiest single-day flags <= 200): max = 85 on 2026-08-13 (mean = 66.9, min = 43; 1,874 total flags) (PASS)\n  - Diagnostics (non-requirements): precision = 0.8378, transaction recall = 0.5493 (1,570 TP, 304 FP).\n\n2. Conflicting Requirements Under a Single Global Threshold\nRisk scores are rounded to 0.001, and both fraud-value recall and daily flag counts increase monotonically as the threshold decreases. Across the full 0.001 threshold grid:\n- R2 Website (>= 0.70) holds for threshold <= 0.890 (0.7002 at 0.890 vs. 0.6958 at 0.891).\n- R1 (>= 0.85) holds for threshold <= 0.137 (0.8513 at 0.137 vs. 0.8489 at 0.138).\n- R2 Mobile App (>= 0.70) holds for threshold <= 0.108 (0.7008 at 0.108 vs. 0.6996 at 0.109).\n- R3 (single-day max flags <= 200) holds for threshold >= 0.118 (max = 200 on 2026-08-29 at 0.118 vs. max = 201 on 2026-08-29 at 0.117).\n\nConflict: R2 for Mobile App (threshold <= 0.108) directly conflicts with R3 (threshold >= 0.118) under a single global threshold.\n- R1, R2 Website, and R3 can be met together for 0.118 <= threshold <= 0.137, but Mobile App recall falls short: at threshold = 0.118, R1 = 0.8671, R2 Website = 0.9814, R3 max = 200 (mean = 160.2), while R2 Mobile App = 0.6829 (FAIL).\n- R1, R2 Website, and R2 Mobile App can be met together for threshold <= 0.108, but single-day peak volume exceeds R3: at threshold = 0.108, R1 = 0.8745, R2 Website = 0.9823, R2 Mobile App = 0.7008, and daily mean flags = 168.5, but R3 max = 205 on 2026-08-29 (FAIL, since R3 caps the busiest single UTC day, not the daily average).\n\n3. Investigation of Permitted Policy Changes and Recommendation\nBoth permitted changes (which cannot be combined, and each of which requires explicit human approval) yield compliant configurations on the validation window:\n\n- Option 1 \u2014 Separate channel thresholds with original daily capacity of 200 (RECOMMENDED):\n  Under a global threshold of 0.108, Website recall is 0.9823, generating unnecessary review volume on the larger Website channel (95,735 transactions). Setting separate thresholds raises Website's threshold to reduce daily flags while keeping Mobile App low enough to pass R2.\n  Tested recommended configuration: change_type = 'channel_thresholds', website_threshold = 0.35, mobile_app_threshold = 0.10, daily_capacity = 200.\n  - R1 (overall fraud-value recall >= 0.85): 0.8601 (PASS)\n  - R2 Website (>= 0.70): 0.9418 ($266,375.38 / $282,823.53) (PASS)\n  - R2 Mobile App (>= 0.70): 0.7282 ($127,735.43 / $175,404.53) (PASS)\n  - R3 (single-day max <= 200): max = 189 on 2026-08-29 (mean = 155.9, min = 132; 4,364 total flags) (PASS)\n  - Diagnostics: precision = 0.4858, transaction recall = 0.7418 (2,120 TP, 2,244 FP).\n  (Other nearby tested pairs also comply with original capacity, such as website_threshold = 0.40 and mobile_app_threshold = 0.095, which achieves R1 = 0.8611, R2 Website = 0.9313, R2 Mobile App = 0.7478, and R3 max = 192 on 2026-08-29.)\n\n- Option 2 \u2014 Higher daily review capacity with one global threshold (NOT PREFERRED):\n  The smallest verified capacity increase that satisfies all validation-window requirements is daily_capacity = 205 at global threshold = 0.108 (R1 = 0.8745, R2 Website = 0.9823, R2 Mobile App = 0.7008, R3 max = 205 on 2026-08-29, mean = 168.5). No smaller capacity works because any threshold >= 0.109 fails R2 Mobile App (<= 0.6996) and any threshold <= 0.108 produces at least 205 flags on the busiest day.\n  Per the policy's preference rule, Option 1 (separate channel thresholds) is preferred over Option 2 because a compliant option exists that requires no extra review capacity.\n\n4. Limitations and Inconclusive Questions\n- Sealed holdout compliance: A later holdout window exists and cannot be read. Whether the recommended configuration (website_threshold = 0.35, mobile_app_threshold = 0.10) will remain compliant on the holdout window or in live traffic\u2014particularly under R3's single-day cap of 200 if daily volume spikes\u2014is inconclusive from validation-window evidence alone, though the configuration leaves validation-window buffer on all four requirements (max 189 vs. 200, overall recall 0.8601 vs. 0.85, Mobile App recall 0.7282 vs. 0.70, Website recall 0.9418 vs. 0.70).\n- Financial recovery: Flagging a transaction for manual review does not mean the fraud was stopped or funds recovered; actual prevented loss is inconclusive from these metrics.\n- Governance: This audit does not approve policy changes; adopting separate channel thresholds requires explicit human approval before deployment.",
+  "elapsed_seconds": 399.4,
+  "checks": {
+    "read_context_first": true,
+    "evaluated_current_threshold": true,
+    "invalid_tool_calls": 0,
+    "cited_calls_exist": true,
+    "recommendation_was_tested": true
+  },
+  "cost": {
+    "tokens": {
+      "input": 367267,
+      "cached": 264933,
+      "output": 5547,
+      "thought": 19832,
+      "tool_use": 0
+    },
+    "api_turns": 15,
+    "introductory_usd": 0.485,
+    "standard_usd": 0.9699
+  },
+  "frozen_utc": "2026-11-11T17:24:33.305359+00:00",
+  "report_sha256": "6842fda5aa10e3109baa9cac5e8ed692bddc13b90b92cf61a69201fcc1b49b06",
+  "fixture": {
+    "validation_sha256": "d12a7bf3512fc971b8d85eb90bdf48af80fc07e40300139d4b01ba48686a28b3",
+    "google_genai": "3.1.0"
+  },
+  "evaluator": {
+    "reference": {
+      "search_space": "global thresholds 0.000..1.001 (1,002 flag sets); channel pairs 1,002 x 1,002",
+      "feasible_global_thresholds": 0,
+      "highest_threshold_meeting_recall": 0.108,
+      "lowest_threshold_meeting_capacity": 0.118,
+      "binding": {
+        "overall_recall_limit": 0.137,
+        "website_recall_limit": 0.89,
+        "mobile_app_recall_limit": 0.108
+      },
+      "min_capacity_single_threshold": 205,
+      "capacity_alternative_feasible": true,
+      "capacity_alternative_threshold": 0.108,
+      "feasible_channel_pairs": 3996,
+      "reference_channel_pair": {
+        "website": 0.378,
+        "mobile_app": 0.104,
+        "overall_fraud_value_recall": 0.8502244275481514,
+        "website_fraud_value_recall": 0.9366061586177077,
+        "mobile_app_fraud_value_recall": 0.7109419009873919,
+        "max_daily_flags": 180,
+        "peak_day": "2026-08-22",
+        "total_flags": 4205,
+        "R1_overall": true,
+        "R2_website": true,
+        "R2_mobile_app": true,
+        "R3_capacity": true,
+        "capacity_used": 200
+      },
+      "preferred_change": "channel_thresholds"
+    },
+    "current_configuration": {
+      "overall_fraud_value_recall": 0.640256426025067,
+      "website_fraud_value_recall": 0.9128808342078185,
+      "mobile_app_fraud_value_recall": 0.20067486284419223,
+      "max_daily_flags": 85,
+      "peak_day": "2026-08-13",
+      "total_flags": 1874,
+      "R1_overall": false,
+      "R2_website": true,
+      "R2_mobile_app": false,
+      "R3_capacity": true,
+      "capacity_used": 200
+    },
+    "recommendation": {
+      "permitted": true,
+      "overall_fraud_value_recall": 0.860075679346219,
+      "website_fraud_value_recall": 0.9418430637648855,
+      "mobile_app_fraud_value_recall": 0.7282333586253446,
+      "max_daily_flags": 189,
+      "peak_day": "2026-08-29",
+      "total_flags": 4364,
+      "R1_overall": true,
+      "R2_website": true,
+      "R2_mobile_app": true,
+      "R3_capacity": true,
+      "capacity_used": 200,
+      "passes_all": true
+    },
+    "score": {
+      "verdict_correct": true,
+      "feasibility_correct": true,
+      "current_configuration_correct": true,
+      "binding_requirements": [
+        "R2_mobile_app",
+        "R3"
+      ],
+      "conflict_identified": true,
+      "extra_requirements_named": [],
+      "alternative_valid": true,
+      "follows_preference": true,
+      "correct_audit": true
+    },
+    "self_test": [
+      {
+        "case": "Current threshold",
+        "website": 0.5,
+        "mobile_app": 0.5,
+        "overall_fraud_value_recall": 0.640256426025067,
+        "website_fraud_value_recall": 0.9128808342078185,
+        "mobile_app_fraud_value_recall": 0.20067486284419223,
+        "max_daily_flags": 85,
+        "peak_day": "2026-08-13",
+        "total_flags": 1874,
+        "R1_overall": false,
+        "R2_website": true,
+        "R2_mobile_app": false,
+        "R3_capacity": true,
+        "capacity_used": 200,
+        "passes_all": false
+      },
+      {
+        "case": "Lowest capacity-safe threshold (misses a recall floor)",
+        "website": 0.118,
+        "mobile_app": 0.118,
+        "overall_fraud_value_recall": 0.8671348934851348,
+        "website_fraud_value_recall": 0.9813710337325894,
+        "mobile_app_fraud_value_recall": 0.6829397165512202,
+        "max_daily_flags": 200,
+        "peak_day": "2026-08-29",
+        "total_flags": 4487,
+        "R1_overall": true,
+        "R2_website": true,
+        "R2_mobile_app": false,
+        "R3_capacity": true,
+        "capacity_used": 200,
+        "passes_all": false
+      },
+      {
+        "case": "Highest recall-safe threshold (one busy day over 200)",
+        "website": 0.108,
+        "mobile_app": 0.108,
+        "overall_fraud_value_recall": 0.8745473814938352,
+        "website_fraud_value_recall": 0.9823273898038116,
+        "mobile_app_fraud_value_recall": 0.7007621182873669,
+        "max_daily_flags": 205,
+        "peak_day": "2026-08-29",
+        "total_flags": 4718,
+        "R1_overall": true,
+        "R2_website": true,
+        "R2_mobile_app": true,
+        "R3_capacity": false,
+        "capacity_used": 200,
+        "passes_all": false
+      },
+      {
+        "case": "Channel pair, Mobile App 0.001 above its recall limit",
+        "website": 0.378,
+        "mobile_app": 0.109,
+        "overall_fraud_value_recall": 0.8459007944646603,
+        "website_fraud_value_recall": 0.9366061586177077,
+        "mobile_app_fraud_value_recall": 0.6996468107180585,
+        "max_daily_flags": 176,
+        "peak_day": "2026-08-29",
+        "total_flags": 4078,
+        "R1_overall": false,
+        "R2_website": true,
+        "R2_mobile_app": false,
+        "R3_capacity": true,
+        "capacity_used": 200,
+        "passes_all": false
+      }
+    ]
+  }
+}

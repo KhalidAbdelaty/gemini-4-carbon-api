@@ -25,6 +25,7 @@ YELLOW = "#FBBC05"      # Yellow 500 keeps black text: 12.3:1
 GREY_700, BORDER = "#5F6368", "rgba(154, 160, 166, 0.4)"  # Grey 500 at 40% opacity, borders only
 
 RUNS = Path("runs")
+RECORDED = Path("recorded_runs")  # the tutorial's attempts, shown until you save a run of your own
 ICON = {"deployable": GREEN_FILL, "not deployable": RED_FILL, "inconclusive": YELLOW}
 
 st.set_page_config(page_title="PayGuard Deployment Audit", page_icon=":material/policy:", layout="wide")
@@ -182,6 +183,8 @@ if st.session_state.trigger:
 
 if show_latest:
     files = sorted(RUNS.glob("*.json"), key=lambda p: p.stat().st_mtime) if RUNS.exists() else []
+    if not files and RECORDED.exists():
+        files = sorted(RECORDED.glob("*.json"))
     if not files:
         st.info("No recorded runs yet. Start a live audit to create one in runs/.")
         st.session_state.record = None
@@ -210,7 +213,7 @@ def tool_table(calls: list[dict]) -> pd.DataFrame:
             "Overall FVR": pct(r.get("overall_fraud_value_recall")),
             "Website FVR": pct(r.get("by_channel", {}).get("website", {}).get("fraud_value_recall")),
             "Mobile App FVR": pct(r.get("by_channel", {}).get("mobile_app", {}).get("fraud_value_recall")),
-            "Busiest day": r.get("daily_flags", {}).get("max", ""),
+            "Busiest day": r.get("daily_flags", {}).get("max"),
             "Error": r.get("error", ""),
         })
     return pd.DataFrame(rows)

@@ -19,6 +19,8 @@ import pandas as pd
 import config as cfg
 
 GRID = 1002  # thresholds 0..1001 per mille; 1001 flags nothing
+# 1001 is a reference-only sentinel. The tools accept 0 to 1, and to_milli() rejects anything above 1,
+# so a recommendation is always scored at a threshold the agent could actually request.
 R1, R2 = (85, 100), (70, 100)  # recall floors as integer fractions
 
 
