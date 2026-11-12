@@ -5,6 +5,7 @@ streamlit run app_streamlit.py
 
 import base64
 import html
+import io
 import json
 from datetime import date
 from pathlib import Path
@@ -13,6 +14,7 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 from dotenv import dotenv_values
+from PIL import Image
 
 import config as cfg
 
@@ -45,13 +47,23 @@ st.markdown(f"""
 h1, h2, h3 {{ color: #000000 !important; }}
 .stMarkdown p, .stMarkdown li, .stMarkdown strong {{ color: #000000; }}
 [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] *, [data-testid="stMetricLabel"] * {{ color: {GREY_700} !important; }}
+[data-testid="stCaptionContainer"] {{ opacity: 1 !important; }}  /* Streamlit fades captions to 60%, which drops Grey 700 below 4.5:1 */
 [data-testid="stMetricValue"] {{ font-family: var(--mono); color: #000000; font-size: 1.35rem; }}
 [data-testid="stMetricValue"], [data-testid="stMetricValue"] * {{ font-family: var(--mono) !important; }}
 [data-testid="stVerticalBlockBorderWrapper"] {{ border-color: {BORDER} !important; border-radius: 0.6rem !important; background: #FFFFFF; }}
-.brand {{ display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem; }}
-.brand img {{ height: 26px; }}
-.model-pill {{ font-family: var(--mono); font-size: 0.85rem; padding: 0.15rem 0.6rem; background: #FFFFFF;
+.brand {{ display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.25rem; }}
+.brand img {{ height: 26px; width: auto; display: block; }}
+.model-pill {{ font-family: var(--mono); font-size: 0.8rem; padding: 0.15rem 0.65rem; background: #FFFFFF;
                border: 1px solid {BORDER}; border-radius: 0.6rem; color: #000000; }}
+.st-key-cards [data-testid="stColumn"] > [data-testid="stVerticalBlock"],
+.st-key-cards [data-testid="stLayoutWrapper"], .st-key-cards [class*="st-key-card-"] {{ height: 100%; }}
+.stats {{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.6rem; margin: 0.6rem 0 1rem; font-family: var(--ui); }}
+@media (max-width: 900px) {{ .stats {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }} }}
+.stat {{ background: #FFFFFF; border: 1px solid {BORDER}; border-radius: 0.6rem; padding: 0.55rem 0.8rem; }}
+.stat .label {{ font-size: 0.78rem; color: {GREY_700}; }}
+.stat .value {{ font-size: 1.1rem; font-weight: 700; font-family: var(--mono); color: #000000; overflow-wrap: anywhere; }}
+.kv, .side-head {{ font-family: var(--ui); }}
+.side-head {{ font-size: 0.85rem; font-weight: 700; color: #000000; margin: 0.4rem 0 0.1rem; }}
 .chip {{ display: inline-block; padding: 0.2rem 0.75rem; margin: 0 0.35rem 0.35rem 0; border-radius: 999px;
          font-size: 0.85rem; border: 1px solid {BORDER}; color: {GREY_700}; background: #FFFFFF; }}
 .chip.on {{ color: #FFFFFF; border-color: transparent; }}
@@ -60,9 +72,10 @@ h1, h2, h3 {{ color: #000000 !important; }}
 button[kind="primary"] {{ background: {BLUE_FILL} !important; border-color: {BLUE_FILL} !important; color: #FFFFFF !important; }}
 button[kind="primary"] * {{ color: #FFFFFF !important; }}
 button[kind="secondary"] {{ background: #FFFFFF !important; border: 1px solid {BORDER} !important; color: #000000 !important; }}
-.kv {{ width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-bottom: 0.8rem; }}
-.kv td {{ padding: 0.3rem 0; border-bottom: 1px solid {BORDER}; vertical-align: top; }}
-.kv td:first-child {{ color: {GREY_700}; padding-right: 0.6rem; }}
+.kv {{ width: 100%; border-collapse: collapse; border: none; font-size: 0.85rem; margin: 0 0 0.8rem; display: table; }}
+.kv tr, .kv td {{ border: none !important; background: transparent !important; }}
+.kv td {{ padding: 0.28rem 0; border-bottom: 1px solid {BORDER} !important; vertical-align: top; }}
+.kv td:first-child {{ color: {GREY_700}; padding-right: 0.75rem; }}
 .kv td:last-child {{ font-family: var(--mono); color: #000000; text-align: right; white-space: nowrap; }}
 .harness {{ font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase; color: {GREY_700}; }}
 </style>
@@ -87,7 +100,16 @@ def rate_in_force() -> tuple[str, dict]:
 
 
 # Header ------------------------------------------------------------------------------------
-logo = base64.b64encode(Path("assets/gemini-logo.png").read_bytes()).decode()
+def trimmed_logo(path: str) -> str:
+    """The PNG has wide transparent margins; crop them so 26px is the height of the mark itself."""
+    img = Image.open(path).convert("RGBA")
+    img = img.crop(img.getchannel("A").getbbox() or (0, 0, *img.size))
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return base64.b64encode(buf.getvalue()).decode()
+
+
+logo = trimmed_logo("assets/gemini-logo.png")
 st.markdown(f'<div class="brand"><img src="data:image/png;base64,{logo}" alt="Gemini logo">'
             f'<span class="model-pill">{esc(cfg.MODEL_ID)}</span></div>', unsafe_allow_html=True)
 st.title("PayGuard Deployment Audit")
@@ -102,18 +124,19 @@ with st.sidebar:
     st.subheader("Run settings")
     st.markdown(kv([
         ("Model", cfg.MODEL_ID),
-        ("Primary thinking_level", cfg.PRIMARY_THINKING_LEVEL),
+        ("thinking_level", cfg.PRIMARY_THINKING_LEVEL),
         ("Clean rerun", cfg.RERUN_THINKING_LEVEL),
-        ("Turns per attempt", cfg.MAX_TURNS),
-        ("Tool calls per attempt", cfg.MAX_TOOL_CALLS),
-        ("Seconds per attempt", f"{cfg.MAX_ELAPSED_SECONDS:,}"),
-        ("Spend per attempt", f"${cfg.MAX_SPEND_USD:.2f}"),
+        ("Max turns", cfg.MAX_TURNS),
+        ("Max tool calls", cfg.MAX_TOOL_CALLS),
+        ("Max seconds", f"{cfg.MAX_ELAPSED_SECONDS:,}"),
+        ("Max spend", f"${cfg.MAX_SPEND_USD:.2f}"),
     ]), unsafe_allow_html=True)
+    st.caption("Limits apply to each attempt and are enforced in code.")
     st.subheader("Price per million tokens")
     for label, p in (("Introductory, through Nov 30, 2026", cfg.PRICES["introductory"]),
                      ("Standard, from Dec 1, 2026", cfg.PRICES["standard"])):
-        st.markdown(f"**{label}**")
-        st.markdown(kv([("Input", f"${p['input']:.2f}"), ("Output incl. thinking", f"${p['output']:.2f}"),
+        st.markdown(f'<div class="side-head">{esc(label)}</div>', unsafe_allow_html=True)
+        st.markdown(kv([("Input", f"${p['input']:.2f}"), ("Output + thinking", f"${p['output']:.2f}"),
                         ("Cached input", f"${p['cached']:.2f}")]), unsafe_allow_html=True)
     st.caption("Gemini 4 Carbon has no free tier. Every token is billed, thinking included.")
     if st.session_state.spent_period:
@@ -130,11 +153,12 @@ CARDS = [
     (":material/data_object:", "Structured report", "A final request with a JSON schema and no tools."),
     (":material/payments:", "Usage-based cost", "Tokens from every turn, priced at the rate in force."),
 ]
-cols = st.columns(2)
-for n, (icon, name, caption) in enumerate(CARDS):
-    with cols[n % 2].container(border=True):
-        st.markdown(f"{icon} **{name}**")
-        st.caption(caption)
+with st.container(key="cards"):
+    for row in range(0, len(CARDS), 2):  # one st.columns per row, so each pair of cards lines up
+        for col, (icon, name, caption) in zip(st.columns(2), CARDS[row:row + 2]):
+            with col.container(border=True, key=f"card-{name.split()[0].lower()}"):
+                st.markdown(f"{icon} **{name}**")
+                st.caption(caption)
 
 # Buttons -----------------------------------------------------------------------------------
 def start_run():
@@ -203,6 +227,12 @@ def chips(status: str | None) -> str:
     return out
 
 
+def stats_html(items) -> str:
+    cells = "".join(f'<div class="stat"><div class="label">{esc(a)}</div><div class="value">{esc(b)}</div></div>'
+                    for a, b in items)
+    return f'<div class="stats">{cells}</div>'
+
+
 def tool_table(calls: list[dict]) -> pd.DataFrame:
     rows = []
     for c in calls:
@@ -241,19 +271,17 @@ def render(record: dict):
                 + (f'<span class="chip level">{esc(high.get("thinking_level", ""))}</span>' if high else ""),
                 unsafe_allow_html=True)
 
-    grid = st.columns(4)
-    grid[0].metric("Carbon's verdict (medium)", rep.get("status", "no report"), delta_color="off")
-    grid[1].metric("Evaluator agrees", "yes" if score.get("correct_audit") else "no", delta_color="off")
-    grid[2].metric("Holdout", "not run" if not hold else
-                   ("passes all" if hold["holdout"].get("passes_all") else "fails"), delta_color="off")
-    grid[3].metric("Recommended change", {"channel_thresholds": "channel split", "capacity_increase": "more capacity"}
-                   .get(rep.get("recommended_change_type"), rep.get("recommended_change_type", "n/a")), delta_color="off")
-    grid = st.columns(4)
-    grid[0].metric("API turns", med["cost"]["api_turns"], delta_color="off")
-    grid[1].metric("Tool calls", len(med["tool_calls"]), delta_color="off")
-    grid[2].metric("Elapsed", f"{med['elapsed_seconds']:.0f} s", delta_color="off")
-    grid[3].metric(f"Cost ({med['rate_period']} rate)", f"${med['cost'][med['rate_period'] + '_usd']:.4f}",
-                   delta_color="off")
+    change = {"channel_thresholds": "channel split", "capacity_increase": "more capacity"}
+    st.markdown(stats_html([
+        ("Carbon's verdict (medium)", rep.get("status", "no report")),
+        ("Evaluator agrees", "yes" if score.get("correct_audit") else "no"),
+        ("Holdout", "not run" if not hold else ("passes all" if hold["holdout"].get("passes_all") else "fails")),
+        ("Recommended change", change.get(rep.get("recommended_change_type"), rep.get("recommended_change_type") or "n/a")),
+        ("API turns", med["cost"]["api_turns"]),
+        ("Tool calls", len(med["tool_calls"])),
+        ("Elapsed", f"{med['elapsed_seconds']:.0f} s"),
+        (f"Cost ({med['rate_period']} rate)", f"${med['cost'][med['rate_period'] + '_usd']:.4f}"),
+    ]), unsafe_allow_html=True)
 
     tabs = st.tabs([":material/description: Report", ":material/tune: Thresholds", ":material/rule: Evaluator",
                     ":material/lock: Holdout", ":material/psychology: Thinking", ":material/payments: Cost"])
@@ -299,9 +327,9 @@ def render(record: dict):
             marks = alt.Chart(pd.DataFrame({"threshold": [t for t in tested if 0.05 <= t <= 0.4]})).mark_rule(
                 color=GREEN_FILL, opacity=0.6).encode(x=x)
             top = alt.Chart(long).mark_line(clip=True).encode(
-                x=x, y=alt.Y("recall:Q", title="Fraud-value recall", axis=alt.Axis(format="%"),
+                x=x, y=alt.Y("recall:Q", title="Fraud-value recall", axis=alt.Axis(format="%", minExtent=44),
                              scale=alt.Scale(domain=[0.3, 1])),
-                color=alt.Color("series:N", title=None, legend=alt.Legend(orient="bottom"),
+                color=alt.Color("series:N", title=None, legend=alt.Legend(orient="top"),
                                 scale=alt.Scale(domain=["overall", "website", "mobile_app"],
                                                 range=["#000000", BLUE_FILL, RED_FILL])),
                 strokeDash=alt.StrokeDash("series:N", legend=None))
@@ -310,7 +338,7 @@ def render(record: dict):
                 color=GREY_700, strokeDash=[4, 4]).encode(y="y:Q")
             st.altair_chart((marks + top + rules).properties(height=240), width="stretch")
             bottom = alt.Chart(view).mark_line(color="#000000", clip=True).encode(
-                x=x, y=alt.Y("max_daily:Q", title="Busiest-day flags", scale=alt.Scale(domain=[50, 300], clamp=True)))
+                x=x, y=alt.Y("max_daily:Q", title="Busiest-day flags", axis=alt.Axis(minExtent=44), scale=alt.Scale(domain=[50, 300], clamp=True)))
             cap = alt.Chart(pd.DataFrame({"y": [cfg.MAX_DAILY_REVIEWS]})).mark_rule(
                 color=GREY_700, strokeDash=[4, 4]).encode(y="y:Q")
             st.altair_chart((marks + bottom + cap).properties(height=200), width="stretch")
@@ -394,16 +422,16 @@ def render(record: dict):
             if not att:
                 continue
             st.markdown(f"**{esc(att['thinking_level'])}**")
-            st.dataframe(pd.DataFrame([{"Turn": n, "Kind": t["kind"], "Status": t["status"], "Seconds": t["seconds"],
-                                        **t["usage"]} for n, t in enumerate(att["turns"], 1)]),
-                         hide_index=True, width="stretch")
+            turns = pd.DataFrame([{"Turn": n, "Kind": t["kind"], "Status": t["status"], "Seconds": t["seconds"],
+                                   **t["usage"]} for n, t in enumerate(att["turns"], 1)])
+            st.dataframe(turns, hide_index=True, width="stretch", height=35 * (len(turns) + 1) + 3)  # every turn, no scroll
             tok = att["cost"]["tokens"]
-            c = st.columns(4)
-            c[0].metric("Uncached input", f"{tok['input'] - tok['cached']:,}", delta_color="off")
-            c[1].metric("Cached input", f"{tok['cached']:,}", delta_color="off")
-            c[2].metric("Output + thinking", f"{tok['output'] + tok['thought']:,}", delta_color="off")
-            c[3].metric("Intro / standard", f"${att['cost']['introductory_usd']:.4f} / ${att['cost']['standard_usd']:.4f}",
-                        delta_color="off")
+            st.markdown(stats_html([
+                ("Uncached input", f"{tok['input'] - tok['cached']:,}"),
+                ("Cached input", f"{tok['cached']:,}"),
+                ("Output + thinking", f"{tok['output'] + tok['thought']:,}"),
+                ("Intro / standard", f"${att['cost']['introductory_usd']:.4f} / ${att['cost']['standard_usd']:.4f}"),
+            ]), unsafe_allow_html=True)
 
 
 if st.session_state.record:
